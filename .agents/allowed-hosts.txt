@@ -1,0 +1,4 @@
+# Outside hosts this project talks to, beyond its own domain (see the principles).
+# kylepace.net: Kyle's own site. scripts/links.mjs fetches post pages at build time to
+# find which "Read" links are live. Nothing is loaded from it in the browser.
+kylepace.net

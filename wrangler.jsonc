@@ -1,0 +1,14 @@
+{
+  // Cloudflare Workers config. The Astro adapter fills in the entry point and static
+  // assets at build time; settings here are merged into that.
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "skill-tree",
+  "compatibility_date": "2026-11-01",
+  "observability": { "enabled": true },
+  // Claims kylepace.dev/skill-tree on the hub's domain. Routes win over the hub's
+  // Custom Domain, so only these paths reach this Worker.
+  "routes": [
+    { "pattern": "kylepace.dev/skill-tree", "zone_name": "kylepace.dev" },
+    { "pattern": "kylepace.dev/skill-tree/*", "zone_name": "kylepace.dev" }
+  ]
+}

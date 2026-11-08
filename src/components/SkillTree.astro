@@ -1,0 +1,1186 @@
+---
+// The interactive career skill tree (/labs/skill-tree/). The boards are drawn at build
+// time by SkillBoard.astro; the script below adds tracks, details, the timeline replay
+// and one secret. All content lives in src/data/skill-tree.ts.
+import SkillBoard from './SkillBoard.astro';
+import { nodes, tracks, eras, stats, timeScale, timeTicks } from '../data/skill-tree';
+
+interface Props {
+  /** Read-more links for nodes whose writing or case study is public in this build. */
+  links: Record<string, { href: string; title: string }>;
+}
+
+const { links } = Astro.props;
+
+const colorVar = (color: string, ink = false) =>
+  color === 'neutral' ? 'var(--ink-muted)' : `var(--${color}${ink ? '-ink' : ''})`;
+const trackStyle = (id: string) => {
+  const t = tracks.find((track) => track.id === id)!;
+  return `--c: ${colorVar(t.color)}; --c-ink: ${colorVar(t.color, true)}`;
+};
+
+const visible = nodes.filter((n) => n.status !== 'secret');
+const counts = (id: string) => {
+  const skills = visible.filter((n) => n.track === id && (n.kind ?? 'skill') === 'skill');
+  return {
+    total: visible.filter((n) => n.track === id).length,
+    sig: skills.filter((n) => n.lv === 'sig').length,
+    dev: skills.filter((n) => n.lv === 'dev').length,
+  };
+};
+const countLine = (id: string) => {
+  const c = counts(id);
+  return [`${c.total} skills`, c.sig && `${c.sig} signature`, c.dev && `${c.dev} developing`].filter(Boolean).join(' · ');
+};
+
+// Year to position on the weighted timeline (timeScale in the data file).
+const pct = (year: number) => {
+  for (let i = 1; i < timeScale.length; i++) {
+    const [y0, p0] = timeScale[i - 1];
+    const [y1, p1] = timeScale[i];
+    if (year <= y1 || i === timeScale.length - 1) return p0 + ((Math.max(year, y0) - y0) / (y1 - y0)) * (p1 - p0);
+  }
+  return 100;
+};
+const quests = visible.filter((n) => n.status === 'active');
+---
+
+<section class="skill-tree" id="skill-tree" data-view="all">
+  <div class="sheet">
+    <div class="sheet-side">
+    <div class="who">
+      <span class="avatar" aria-hidden="true">KP</span>
+      <div>
+        <p class="class">Director of Product</p>
+        <p class="muted">Level 6 · origin story: the restaurant floor</p>
+      </div>
+    </div>
+    <ul class="legend" aria-label="How to read the tree">
+      <li>
+        <svg viewBox="-14 -14 28 28" aria-hidden="true"><circle r="10" class="lg-sig" /><polygon class="lg-star" points="7,-12 8.4,-8.9 11.8,-8.6 9.2,-6.4 10,-3 7,-4.8 4,-3 4.8,-6.4 2.2,-8.6 5.6,-8.9" /></svg>
+        Signature strength
+      </li>
+      <li><svg viewBox="-14 -14 28 28" aria-hidden="true"><circle r="10" class="lg-pro" /></svg>Proficient</li>
+      <li>
+        <svg viewBox="-14 -14 28 28" aria-hidden="true"><circle r="10" class="lg-dev" /><circle r="10" class="lg-arc" transform="rotate(-90)" /></svg>
+        Still developing
+      </li>
+      <li><svg viewBox="-14 -14 28 28" aria-hidden="true"><rect x="-10" y="-10" width="20" height="20" rx="6" class="lg-pro" /></svg>Milestone</li>
+      <li><svg viewBox="-14 -14 28 28" aria-hidden="true"><circle r="12" class="lg-halo" /><circle r="8" class="lg-cap" /></svg>Capstone</li>
+      <li><svg viewBox="-14 -14 28 28" aria-hidden="true"><circle r="5" class="lg-dot" /></svg>Builds on another track</li>
+    </ul>
+    </div>
+    <dl class="stats" aria-label="Attributes, out of 20">
+      {
+        stats.map((s) => (
+          <div class="stat" style={`--c: ${colorVar(s.color)}`}>
+            <dt>{s.key}</dt>
+            <dd>
+              <span class="bar" aria-hidden="true">
+                <span style={`width: ${(s.value / 20) * 100}%`} />
+              </span>
+              <span class="value">{s.value}</span>
+              <span class="why">{s.why}</span>
+            </dd>
+          </div>
+        ))
+      }
+    </dl>
+
+  </div>
+
+  <div class="layout">
+    <div class="game">
+      <div class="tabs" role="toolbar" aria-label="Tracks">
+        <button type="button" class="tab" data-view="all" aria-pressed="true">All tracks</button>
+        {
+          tracks.map((t) => (
+            <button type="button" class="tab" data-view={t.id} aria-pressed="false" style={trackStyle(t.id)}>
+              <span class="dot" aria-hidden="true" />
+              {t.name}
+            </button>
+          ))
+        }
+      </div>
+
+      <div class="stage">
+        <div class="panel overview" data-panel="all">
+          {
+            tracks.map((t) => (
+              <div class="mini-card" style={trackStyle(t.id)} data-track={t.id}>
+                <button type="button" class="mini-head" data-open={t.id}>
+                  <span class="mini-name">{t.name}</span>
+                  <span class="mini-sub">{countLine(t.id)}</span>
+                </button>
+                <SkillBoard trackId={t.id} mini />
+              </div>
+            ))
+          }
+        </div>
+        {
+          tracks.map((t) => (
+            <div class="panel track" data-panel={t.id} hidden style={trackStyle(t.id)}>
+              <div class="track-head">
+                <h2>{t.name}</h2>
+                <p class="track-sub">{t.sub} · {countLine(t.id)}</p>
+                <p class="track-blurb">{t.blurb}</p>
+              </div>
+              <SkillBoard trackId={t.id} />
+            </div>
+          ))
+        }
+      </div>
+
+      <div class="timeline">
+        <div class="tl-top">
+          <p class="tl-now" aria-live="polite">
+            <span class="tl-year" data-year>Now</span>
+            <span class="tl-era" data-era>Local Public</span>
+          </p>
+          <div class="tl-buttons">
+            <button type="button" class="tl-play" data-play>Replay my career</button>
+            <button type="button" class="tl-small" data-speed aria-label="Playback speed: 1 times">1×</button>
+            <button type="button" class="tl-small" data-now>Now</button>
+          </div>
+        </div>
+        <p class="tl-ticker" data-ticker></p>
+        <div class="lanes">
+          {
+            [0, 1].map((lane) => (
+              <div class="lane">
+                <span class="lane-name">{lane ? 'School' : 'Work'}</span>
+                <div class="lane-track">
+                  {eras
+                    .filter((e) => e.lane === lane)
+                    .map((e) => (
+                      <button
+                        type="button"
+                        class="era"
+                        data-jump={e.from}
+                        style={`left: ${pct(e.from)}%; width: ${pct(e.to) - pct(e.from)}%; ${trackStyle(e.track)}`}
+                        title={e.name}
+                        aria-label={`Jump to ${e.name} (${Math.floor(e.from)})`}
+                      />
+                    ))}
+                  <span class="playhead" aria-hidden="true" data-playhead />
+                </div>
+              </div>
+            ))
+          }
+          <div class="lane">
+            <label class="lane-name" for="tl-scrub">Year</label>
+            <div class="lane-track scrub-wrap">
+              <input type="range" id="tl-scrub" min="0" max="100" step="0.1" value="100" data-scrub />
+              <div class="ticks" aria-hidden="true">
+                {timeTicks.map((y, i) => (
+                  <span class:list={{ last: i === timeTicks.length - 1, minor: i % 2 === 1 && i < timeTicks.length - 1 }} style={`left: ${pct(y)}%`}>
+                    {i === timeTicks.length - 1 ? 'Now' : y}
+                  </span>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+        <p class="tl-note">Not to scale: the long early chapters are squeezed so the busy recent years have room.</p>
+      </div>
+    </div>
+
+    <aside class="detail" aria-label="Skill details">
+      <div class="detail-inner" data-detail aria-live="polite">
+        <p class="eyebrow">How to play</p>
+        <h2>Pick a skill</h2>
+        <p>
+          Open a track, then choose any skill to see where it came from and what it leads to. Stars mark my signature
+          strengths; dashed rings are things I’m still building.
+        </p>
+        <p>Or press <strong>Replay my career</strong> to watch the whole tree fill in, one year at a time.</p>
+        {
+          quests.length > 0 && (
+            <>
+              <h3>Quests in progress</h3>
+              <ul class="rel">
+                {quests.map((q) => (
+                  <li>
+                    <button type="button" data-go={q.id} style={trackStyle(q.track)}>
+                      {q.name}
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </>
+          )
+        }
+      </div>
+    </aside>
+  </div>
+</section>
+
+<script type="application/json" id="skill-tree-links" set:html={JSON.stringify(links)} />
+
+<script>
+  import { nodes, tracks, eras, timeScale } from '../data/skill-tree';
+
+  const root = document.querySelector<HTMLElement>('#skill-tree')!;
+  const links: Record<string, { href: string; title: string }> = JSON.parse(
+    document.querySelector('#skill-tree-links')?.textContent || '{}',
+  );
+  const byId = Object.fromEntries(nodes.map((n) => [n.id, n]));
+  const trackById = Object.fromEntries(tracks.map((t) => [t.id, t]));
+  const T0 = timeScale[0][0];
+  const T1 = timeScale[timeScale.length - 1][0];
+  // The replay moves at a steady pace along the weighted timeline: 250 ms per percent.
+  const PCT_MS = 250;
+  const reduceMotion = () =>
+    window.matchMedia('(prefers-reduced-motion: reduce)').matches || document.documentElement.dataset.motion === 'reduce';
+
+  const state = { view: 'all', selected: '', playhead: T1, playing: false, speed: 1, secret: false };
+  const nodeEls = [...root.querySelectorAll<SVGGElement>('.node')];
+  const edgeEls = [...root.querySelectorAll<SVGPathElement>('.edge')];
+  const detail = root.querySelector<HTMLElement>('[data-detail]')!;
+  const defaultDetail = detail.innerHTML;
+
+  const colorVar = (color: string, ink = false) =>
+    color === 'neutral' ? 'var(--ink-muted)' : `var(--${color}${ink ? '-ink' : ''})`;
+  const styleFor = (trackId: string) => {
+    const t = trackById[trackId];
+    return `--c: ${colorVar(t.color)}; --c-ink: ${colorVar(t.color, true)}`;
+  };
+  const isShown = (id: string) => byId[id].status !== 'secret' || state.secret;
+
+  // ---------- Views ----------
+  function setView(view: string, focusPanel = false) {
+    if (view !== 'all' && !trackById[view]) view = 'all';
+    state.view = view;
+    root.dataset.view = view;
+    root.querySelectorAll<HTMLElement>('[data-panel]').forEach((p) => (p.hidden = p.dataset.panel !== view));
+    root.querySelectorAll<HTMLButtonElement>('.tab').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.view === view)));
+    try {
+      history.replaceState(null, '', view === 'all' ? location.pathname : `#${view}`);
+    } catch {}
+    if (focusPanel) root.querySelector<HTMLElement>(`[data-panel="${view}"] h2`)?.focus();
+    paint();
+  }
+
+  // ---------- Selection ----------
+  function ancestors(id: string) {
+    const out = new Set<string>();
+    const stack = [id];
+    while (stack.length) {
+      const cur = stack.pop()!;
+      if (out.has(cur) || !byId[cur]) continue;
+      out.add(cur);
+      (byId[cur].from ?? []).forEach((p) => stack.push(p));
+    }
+    return out;
+  }
+
+  function light(id: string) {
+    const lit = id ? ancestors(id) : new Set<string>();
+    edgeEls.forEach((e) => e.classList.toggle('lit', lit.has(e.dataset.to!) && lit.has(e.dataset.from!)));
+  }
+
+  const levelInfo = {
+    sig: { name: 'Signature strength', note: 'One of my go-to strengths. Ask me about it.' },
+    pro: { name: 'Proficient', note: 'Solid, and something I use regularly.' },
+    dev: { name: 'Still developing', note: 'Real experience, but I’m still building this one.' },
+  };
+  const kindName = { skill: 'Skill', milestone: 'Milestone', capstone: 'Capstone', secret: 'Secret' };
+
+  function relButtons(ids: string[], here: string) {
+    const list = ids.filter(isShown);
+    if (!list.length) return '<p class="muted none">Nothing yet</p>';
+    return `<ul class="rel">${list
+      .map((id) => {
+        const n = byId[id];
+        const other = n.track !== here ? ` <span class="rel-track">${trackById[n.track].name}</span>` : '';
+        return `<li><button type="button" data-go="${n.id}" style="${styleFor(n.track)}">${n.name}${other}</button></li>`;
+      })
+      .join('')}</ul>`;
+  }
+
+  function select(id: string) {
+    const n = byId[id];
+    if (!n || !isShown(id)) return;
+    if (state.view !== n.track) setView(n.track);
+    state.selected = id;
+    const kind = n.kind ?? 'skill';
+    const t = trackById[n.track];
+    const lv = kind === 'skill' ? levelInfo[n.lv ?? 'pro'] : null;
+    const children = nodes.filter((m) => (m.from ?? []).includes(id) || (m.cross ?? []).includes(id)).map((m) => m.id);
+    const status =
+      n.status === 'active' ? '<span class="pill active">In progress</span>' : n.status === 'locked' ? '<span class="pill">Locked</span>' : '';
+    const link = links[id];
+    detail.innerHTML = `
+      <p class="pills" style="${styleFor(n.track)}"><span class="pill track">${t.name}</span><span class="pill">${kindName[kind]}</span>${status}</p>
+      <h2 tabindex="-1">${n.name}</h2>
+      <p class="when">${n.when}</p>
+      ${lv ? `<p class="level level-${n.lv ?? 'pro'}" style="${styleFor(n.track)}"><strong>${lv.name}</strong> ${lv.note}</p>` : ''}
+      <p>${n.lore}</p>
+      ${n.effects?.length ? `<ul class="effects">${n.effects.map((e) => `<li>${e}</li>`).join('')}</ul>` : ''}
+      ${link ? `<p><a class="read" href="${link.href}">Read: ${link.title} <span aria-hidden="true">→</span></a></p>` : ''}
+      <h3>Builds on</h3>
+      ${[...(n.from ?? []), ...(n.cross ?? [])].length ? relButtons([...(n.from ?? []), ...(n.cross ?? [])], n.track) : '<p class="muted none">A starting point</p>'}
+      <h3>Leads to</h3>
+      ${relButtons(children, n.track)}
+    `;
+    paint();
+    if (window.matchMedia('(max-width: 60rem)').matches) {
+      detail.scrollIntoView({ behavior: reduceMotion() ? 'auto' : 'smooth', block: 'start' });
+    }
+  }
+
+  function clearSelection() {
+    state.selected = '';
+    detail.innerHTML = defaultDetail;
+    paint();
+  }
+
+  // ---------- Painting state onto the boards ----------
+  function paint() {
+    nodeEls.forEach((el) => {
+      const id = el.dataset.id!;
+      el.classList.toggle('selected', id === state.selected);
+      el.classList.toggle('secret-hidden', !isShown(id));
+      el.classList.toggle('dormant', Number(el.dataset.t) > state.playhead);
+    });
+    edgeEls.forEach((e) => {
+      const to = e.dataset.to!;
+      e.classList.toggle('secret-hidden', !isShown(to));
+      e.classList.toggle('dormant', (byId[to].status === 'locked' ? T1 : (byId[to].t ?? T1)) > state.playhead);
+    });
+    light(state.selected);
+    paintTimeline();
+  }
+
+  // ---------- Timeline ----------
+  const yearEl = root.querySelector<HTMLElement>('[data-year]')!;
+  const eraEl = root.querySelector<HTMLElement>('[data-era]')!;
+  const ticker = root.querySelector<HTMLElement>('[data-ticker]')!;
+  const scrub = root.querySelector<HTMLInputElement>('[data-scrub]')!;
+  const playBtn = root.querySelector<HTMLButtonElement>('[data-play]')!;
+  const speedBtn = root.querySelector<HTMLButtonElement>('[data-speed]')!;
+  const playheads = [...root.querySelectorAll<HTMLElement>('[data-playhead]')];
+  // Year to position on the weighted timeline, and back.
+  const pct = (year: number) => {
+    for (let i = 1; i < timeScale.length; i++) {
+      const [y0, p0] = timeScale[i - 1];
+      const [y1, p1] = timeScale[i];
+      if (year <= y1 || i === timeScale.length - 1) return p0 + ((Math.max(year, y0) - y0) / (y1 - y0)) * (p1 - p0);
+    }
+    return 100;
+  };
+  const yearAt = (position: number) => {
+    for (let i = 1; i < timeScale.length; i++) {
+      const [y0, p0] = timeScale[i - 1];
+      const [y1, p1] = timeScale[i];
+      if (position <= p1 || i === timeScale.length - 1) return y0 + ((Math.max(position, p0) - p0) / (p1 - p0)) * (y1 - y0);
+    }
+    return T1;
+  };
+
+  function paintTimeline() {
+    const now = state.playhead >= T1;
+    yearEl.textContent = now ? 'Now' : String(Math.floor(state.playhead));
+    const current = now ? ['Local Public'] : eras.filter((e) => e.name && state.playhead >= e.from && state.playhead < e.to).map((e) => e.name);
+    eraEl.textContent = current.length ? current.join(' + ') : 'Between chapters';
+    playheads.forEach((p) => (p.style.left = `${pct(state.playhead)}%`));
+    scrub.value = String(pct(state.playhead));
+    scrub.setAttribute('aria-valuetext', now ? 'Now' : String(Math.floor(state.playhead)));
+    playBtn.textContent = state.playing ? 'Pause' : state.playhead < T1 && state.playhead > T0 ? 'Resume' : 'Replay my career';
+  }
+
+  function setPlayhead(year: number, playing = false) {
+    const before = state.playhead;
+    state.playhead = Math.min(T1, Math.max(T0, year));
+    if (playing) {
+      const unlocked = nodes
+        .filter((n) => isShown(n.id) && n.status !== 'locked' && (n.t ?? T1) > before && (n.t ?? T1) <= state.playhead)
+        .sort((a, b) => (a.t ?? 0) - (b.t ?? 0));
+      for (const n of unlocked) {
+        root.querySelectorAll(`.node[data-id="${n.id}"]`).forEach((el) => {
+          el.classList.remove('pop');
+          void (el as SVGGElement).getBBox();
+          el.classList.add('pop');
+        });
+        ticker.innerHTML = `<span style="${styleFor(n.track)}"><span class="dot"></span>${Math.floor(n.t!)}</span> ${n.name} <span class="muted">· ${trackById[n.track].name}</span>`;
+      }
+    }
+    paint();
+  }
+
+  let frame = 0;
+  let last = 0;
+  function play() {
+    if (state.playhead >= T1) {
+      setPlayhead(T0);
+      ticker.textContent = '';
+    }
+    state.playing = true;
+    last = performance.now();
+    const tick = (now: number) => {
+      if (!state.playing) return;
+      setPlayhead(yearAt(pct(state.playhead) + ((now - last) / PCT_MS) * state.speed), true);
+      last = now;
+      if (state.playhead >= T1) {
+        pause();
+        ticker.textContent = 'All caught up. That’s the career so far.';
+        return;
+      }
+      frame = requestAnimationFrame(tick);
+    };
+    frame = requestAnimationFrame(tick);
+    paintTimeline();
+  }
+
+  function pause() {
+    state.playing = false;
+    cancelAnimationFrame(frame);
+    paintTimeline();
+  }
+
+  playBtn.addEventListener('click', () => {
+    if (state.playing) return pause();
+    if (state.playhead >= T1 && state.view !== 'all') setView('all');
+    play();
+  });
+  speedBtn.addEventListener('click', () => {
+    state.speed = state.speed === 1 ? 2 : state.speed === 2 ? 4 : 1;
+    speedBtn.textContent = `${state.speed}×`;
+    speedBtn.setAttribute('aria-label', `Playback speed: ${state.speed} times`);
+  });
+  root.querySelector('[data-now]')!.addEventListener('click', () => {
+    pause();
+    ticker.textContent = '';
+    setPlayhead(T1);
+  });
+  root.querySelectorAll<HTMLButtonElement>('[data-jump]').forEach((b) =>
+    b.addEventListener('click', () => {
+      pause();
+      ticker.textContent = '';
+      setPlayhead(Number(b.dataset.jump) + 0.01);
+    }),
+  );
+  scrub.addEventListener('input', () => {
+    const position = Number(scrub.value);
+    pause();
+    setPlayhead(yearAt(position));
+  });
+
+  // ---------- Events ----------
+  root.addEventListener('click', (event) => {
+    const target = event.target as Element;
+    const go = target.closest<HTMLElement>('[data-go]');
+    if (go) {
+      select(go.dataset.go!);
+      root.querySelector<HTMLElement>('[data-detail] h2')?.focus({ preventScroll: true });
+      return;
+    }
+    const tab = target.closest<HTMLElement>('.tab, [data-open]');
+    if (tab) return setView(tab.dataset.view ?? tab.dataset.open!);
+    const node = target.closest<SVGGElement>('.node');
+    if (node) select(node.dataset.id!);
+  });
+
+  nodeEls.forEach((el) => {
+    el.addEventListener('keydown', (event) => {
+      if (event.key === 'Enter' || event.key === ' ') {
+        event.preventDefault();
+        select(el.dataset.id!);
+      }
+    });
+    el.addEventListener('pointerenter', () => light(el.dataset.id!));
+    el.addEventListener('pointerleave', () => light(state.selected));
+    el.addEventListener('focus', () => light(el.dataset.id!));
+    el.addEventListener('blur', () => light(state.selected));
+  });
+
+  // One secret, for people who remember the old cheat code.
+  const code = ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight', 'b', 'a'];
+  let step = 0;
+  window.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape' && state.selected) return clearSelection();
+    if ((event.target as Element)?.matches?.('input, textarea')) return;
+    const key = event.key.length === 1 ? event.key.toLowerCase() : event.key;
+    step = key === code[step] ? step + 1 : key === code[0] ? 1 : 0;
+    if (step === code.length) {
+      step = 0;
+      state.secret = true;
+      setPlayhead(T1);
+      const secret = nodes.find((n) => n.status === 'secret');
+      if (secret) select(secret.id);
+    }
+  });
+
+  // Start on the track in the address, if there is one (/skill-tree/#release).
+  setView(location.hash.slice(1) || 'all');
+  window.addEventListener('hashchange', () => setView(location.hash.slice(1) || 'all'));
+</script>
+
+<style>
+  .skill-tree {
+    display: grid;
+    gap: var(--space-6);
+  }
+
+  /* ---------- Character sheet ---------- */
+  .sheet {
+    display: grid;
+    gap: var(--space-6) var(--space-8);
+    grid-template-columns: minmax(15rem, 20rem) minmax(0, 1fr);
+    align-items: start;
+    padding: var(--space-6);
+    background: var(--bg-raised);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+  }
+
+  .sheet-side {
+    display: grid;
+    gap: var(--space-6);
+  }
+
+  .panel[hidden] {
+    display: none;
+  }
+
+  .who {
+    display: flex;
+    gap: var(--space-4);
+    align-items: center;
+  }
+
+  .avatar {
+    display: grid;
+    place-items: center;
+    width: 3.25rem;
+    height: 3.25rem;
+    flex: none;
+    border-radius: 1rem;
+    font-family: var(--font-display);
+    font-weight: 700;
+    color: color-mix(in oklab, var(--accent), black 60%);
+    background:
+      radial-gradient(circle at 30% 25%, color-mix(in oklab, var(--accent), white 45%), transparent 60%),
+      var(--accent);
+  }
+
+  .who p {
+    margin: 0;
+    line-height: 1.3;
+  }
+
+  .class {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: var(--step-1);
+  }
+
+  .who .muted {
+    font-size: var(--step--1);
+    margin-top: var(--space-1);
+  }
+
+  .stats {
+    margin: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(11rem, 1fr));
+    gap: var(--space-3) var(--space-6);
+  }
+
+  .stat {
+    display: grid;
+    grid-template-columns: 3.25rem 1fr;
+    align-items: center;
+    column-gap: var(--space-2);
+  }
+
+  .stat dt {
+    font-family: var(--font-mono);
+    font-size: var(--step--1);
+    font-weight: 400;
+    letter-spacing: 0.04em;
+  }
+
+  .stat dd {
+    margin: 0;
+    display: grid;
+    grid-template-columns: 1fr 1.75rem;
+    align-items: center;
+    gap: 0 var(--space-2);
+  }
+
+  .bar {
+    height: 0.5rem;
+    border-radius: 999px;
+    background: color-mix(in oklab, var(--ink), transparent 90%);
+    overflow: hidden;
+  }
+
+  .bar span {
+    display: block;
+    height: 100%;
+    border-radius: inherit;
+    background: var(--c);
+  }
+
+  .value {
+    font-family: var(--font-mono);
+    font-size: var(--step--1);
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .why {
+    grid-column: 1 / -1;
+    font-size: 0.8rem;
+    color: var(--ink-muted);
+    line-height: 1.35;
+  }
+
+  .legend {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(2, auto);
+    justify-content: start;
+    gap: var(--space-1) var(--space-6);
+    font-size: var(--step--1);
+    color: var(--ink-muted);
+  }
+
+  .legend li {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+  }
+
+  .legend svg {
+    width: 1.5rem;
+    height: 1.5rem;
+    flex: none;
+    overflow: visible;
+  }
+
+  .lg-sig { fill: var(--ink-muted); }
+  .lg-star { fill: var(--sunshine); stroke: var(--bg-raised); stroke-width: 1; }
+  .lg-pro { fill: var(--bg-raised); stroke: var(--ink-muted); stroke-width: 2; }
+  .lg-dev { fill: none; stroke: var(--ink-muted); stroke-opacity: 0.5; stroke-width: 2; stroke-dasharray: 3 3; }
+  .lg-arc { fill: none; stroke: var(--ink-muted); stroke-width: 3; stroke-dasharray: 21 63; stroke-linecap: round; }
+  .lg-halo { fill: none; stroke: var(--ink-muted); stroke-opacity: 0.4; stroke-width: 1.5; }
+  .lg-cap { fill: var(--bg-raised); stroke: var(--ink-muted); stroke-width: 2.5; }
+  .lg-dot { fill: var(--violet); }
+
+  /* ---------- Layout ---------- */
+  .layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 21rem;
+    gap: var(--space-6);
+    align-items: start;
+  }
+
+  .game {
+    background: var(--bg-raised);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+
+  .tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    padding: var(--space-4);
+    border-bottom: 1px solid var(--line);
+  }
+
+  .tab {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    min-height: 2.5rem;
+    padding: 0 var(--space-4);
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    background: var(--bg);
+    color: var(--ink);
+    font: inherit;
+    font-size: var(--step--1);
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  .tab .dot {
+    width: 0.6rem;
+    height: 0.6rem;
+    border-radius: 999px;
+    background: var(--c);
+  }
+
+  .tab[aria-pressed='true'] {
+    background: var(--ink);
+    border-color: var(--ink);
+    color: var(--bg);
+  }
+
+  .stage {
+    padding: var(--space-6);
+  }
+
+  .overview {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 12.5rem), 1fr));
+    gap: var(--space-4);
+  }
+
+  .mini-card {
+    display: flex;
+    flex-direction: column;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-sm);
+    background: color-mix(in oklab, var(--c), var(--bg-raised) 94%);
+    padding-bottom: var(--space-3);
+  }
+
+  .mini-card :global(svg) {
+    padding: 0 var(--space-4);
+    cursor: pointer;
+  }
+
+  .mini-head {
+    display: grid;
+    gap: 0.1rem;
+    padding: var(--space-3) var(--space-4) var(--space-2);
+    border: 0;
+    background: none;
+    text-align: left;
+    font: inherit;
+    color: var(--ink);
+    cursor: pointer;
+  }
+
+  .mini-name {
+    font-family: var(--font-display);
+    font-weight: 700;
+    line-height: 1.25;
+    text-decoration: underline;
+    text-decoration-color: var(--c);
+    text-decoration-thickness: 0.15em;
+    text-underline-offset: 0.25em;
+  }
+
+  .mini-sub {
+    font-size: 0.8rem;
+    color: var(--ink-muted);
+  }
+
+  .track-head {
+    max-width: 40rem;
+    margin-bottom: var(--space-4);
+  }
+
+  .track-head h2 {
+    margin: 0;
+    font-size: var(--step-2);
+    text-decoration: underline;
+    text-decoration-color: var(--c);
+    text-decoration-thickness: 0.12em;
+    text-underline-offset: 0.2em;
+  }
+
+  .track-head h2:focus {
+    outline: none;
+  }
+
+  .track-sub {
+    margin: var(--space-2) 0 0;
+    font-size: var(--step--1);
+    font-weight: 600;
+    color: var(--c-ink);
+  }
+
+  .track-blurb {
+    margin: var(--space-2) 0 0;
+    color: var(--ink-muted);
+  }
+
+  /* ---------- Timeline ---------- */
+  .timeline {
+    padding: var(--space-4) var(--space-6) var(--space-6);
+    border-top: 1px solid var(--line);
+    background: color-mix(in oklab, var(--ink), var(--bg-raised) 97%);
+  }
+
+  .tl-top {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3) var(--space-6);
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .tl-now {
+    margin: 0;
+    display: flex;
+    align-items: baseline;
+    gap: var(--space-3);
+  }
+
+  .tl-year {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: var(--step-2);
+    font-variant-numeric: tabular-nums;
+    min-width: 3ch;
+  }
+
+  .tl-era {
+    color: var(--ink-muted);
+  }
+
+  .tl-buttons {
+    display: flex;
+    gap: var(--space-2);
+  }
+
+  .tl-play,
+  .tl-small {
+    min-height: 2.75rem;
+    padding: 0 var(--space-4);
+    border-radius: 999px;
+    font: inherit;
+    font-size: var(--step--1);
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  .tl-play {
+    border: 1px solid var(--accent-ink);
+    background: var(--accent-ink);
+    color: var(--bg);
+  }
+
+  .tl-small {
+    border: 1px solid var(--line);
+    background: var(--bg);
+    color: var(--ink);
+  }
+
+  .tl-ticker {
+    min-height: 1.6em;
+    margin: var(--space-2) 0 var(--space-3);
+    font-size: var(--step--1);
+  }
+
+  .tl-ticker :global(.dot) {
+    display: inline-block;
+    width: 0.55rem;
+    height: 0.55rem;
+    margin-right: var(--space-2);
+    border-radius: 999px;
+    background: var(--c);
+  }
+
+  .tl-ticker :global(> span:first-child) {
+    font-family: var(--font-mono);
+    color: var(--c-ink);
+    margin-right: var(--space-1);
+  }
+
+  .lanes {
+    display: grid;
+    gap: var(--space-2);
+  }
+
+  .lane {
+    display: grid;
+    grid-template-columns: 3.5rem 1fr;
+    align-items: center;
+    gap: var(--space-2);
+  }
+
+  .lane-name {
+    font-size: 0.8rem;
+    color: var(--ink-muted);
+  }
+
+  .lane-track {
+    position: relative;
+    height: 0.75rem;
+    border-radius: 999px;
+    background: color-mix(in oklab, var(--ink), transparent 93%);
+  }
+
+  /* Each chapter is a slim colored bar; click one to jump the timeline there. */
+  .era {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    padding: 0;
+    border: 0;
+    border-left: 2px solid var(--bg-raised);
+    border-radius: 999px;
+    background: var(--c);
+    cursor: pointer;
+  }
+
+  .era:focus-visible {
+    outline-offset: 2px;
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .era:hover {
+      background: var(--c-ink);
+    }
+  }
+
+  .playhead {
+    position: absolute;
+    top: -0.2rem;
+    bottom: -0.2rem;
+    width: 3px;
+    margin-left: -1.5px;
+    border-radius: 2px;
+    background: var(--ink);
+    pointer-events: none;
+  }
+
+  .scrub-wrap {
+    height: auto;
+    background: none;
+  }
+
+  .scrub-wrap input {
+    width: 100%;
+    margin: 0;
+    accent-color: var(--accent-ink);
+    cursor: pointer;
+  }
+
+  .ticks {
+    position: relative;
+    height: 1.1rem;
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    color: var(--ink-muted);
+  }
+
+  .tl-note {
+    margin: var(--space-2) 0 0;
+    font-size: 0.8rem;
+    color: var(--ink-muted);
+  }
+
+  .ticks span {
+    position: absolute;
+    translate: -50% 0;
+  }
+
+  .ticks span:first-child {
+    translate: 0 0;
+  }
+
+  .ticks span.last {
+    translate: -100% 0;
+  }
+
+  @media (max-width: 40rem) {
+    .ticks span.minor {
+      display: none;
+    }
+  }
+
+  /* ---------- Detail panel ---------- */
+  .detail {
+    position: sticky;
+    top: var(--space-6);
+    padding: var(--space-6);
+    background: var(--bg-raised);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    scroll-margin-top: var(--space-6);
+  }
+
+  .detail :global(h2) {
+    margin: var(--space-2) 0 var(--space-1);
+    font-size: var(--step-2);
+  }
+
+  .detail :global(h2:focus) {
+    outline: none;
+  }
+
+  .detail :global(h3) {
+    margin: var(--space-6) 0 var(--space-2);
+    font-size: var(--step--1);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--ink-muted);
+    font-family: var(--font-text);
+  }
+
+  .detail :global(p) {
+    margin: 0 0 var(--space-3);
+  }
+
+  .detail :global(.when) {
+    font-size: var(--step--1);
+    color: var(--ink-muted);
+  }
+
+  .detail :global(.pills) {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    margin: 0;
+  }
+
+  .detail :global(.pill) {
+    padding: 0.05em 0.65em;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--ink-muted);
+  }
+
+  .detail :global(.pill.track) {
+    border-color: var(--c);
+    background: color-mix(in oklab, var(--c), var(--bg-raised) 82%);
+    color: var(--ink);
+  }
+
+  .detail :global(.pill.active) {
+    border-color: var(--accent-ink);
+    color: var(--accent-ink);
+  }
+
+  .detail :global(.level) {
+    display: grid;
+    gap: 0.1rem;
+    padding: var(--space-3) var(--space-4);
+    border-radius: var(--radius-sm);
+    border-left: 4px solid var(--c);
+    background: color-mix(in oklab, var(--c), var(--bg-raised) 88%);
+    font-size: var(--step--1);
+  }
+
+  .detail :global(.level-dev) {
+    border-left-style: dashed;
+    background: var(--bg);
+  }
+
+  .detail :global(.level-sig strong::before) {
+    content: '★ ';
+    color: var(--sunshine-ink);
+  }
+
+  .detail :global(.effects) {
+    margin: 0 0 var(--space-3);
+    padding: 0;
+    list-style: none;
+    display: grid;
+    gap: var(--space-1);
+    font-size: var(--step--1);
+  }
+
+  .detail :global(.effects li::before) {
+    content: '+ ';
+    font-family: var(--font-mono);
+    color: var(--lime-ink);
+  }
+
+  .detail :global(.read) {
+    font-weight: 600;
+  }
+
+  .detail :global(.rel) {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+  }
+
+  .detail :global(.rel button) {
+    min-height: 2.25rem;
+    padding: var(--space-1) var(--space-3);
+    border: 1px solid var(--line);
+    border-left: 4px solid var(--c);
+    border-radius: var(--radius-sm);
+    background: var(--bg);
+    color: var(--ink);
+    font: inherit;
+    font-size: var(--step--1);
+    text-align: left;
+    cursor: pointer;
+  }
+
+  .detail :global(.rel-track) {
+    color: var(--ink-muted);
+    font-size: 0.8em;
+  }
+
+  .detail :global(.none) {
+    font-size: var(--step--1);
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .tab:hover,
+    .tl-small:hover,
+    .detail :global(.rel button:hover) {
+      border-color: var(--ink-muted);
+    }
+
+    .mini-card:hover {
+      border-color: var(--c);
+    }
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .tab,
+    .tl-small,
+    .mini-card {
+      transition: border-color var(--duration-fast) var(--ease-out), background-color var(--duration-fast) var(--ease-out);
+    }
+  }
+
+  @media (max-width: 60rem) {
+    .sheet {
+      grid-template-columns: 1fr;
+    }
+
+    .layout {
+      grid-template-columns: 1fr;
+    }
+
+    .detail {
+      position: static;
+    }
+  }
+
+  /* On small screens the tree keeps a readable size and scrolls sideways. */
+  @media (max-width: 40rem) {
+    .panel.track {
+      overflow-x: auto;
+      margin-inline: calc(-1 * var(--space-4));
+      padding-inline: var(--space-4);
+    }
+
+    .panel.track :global(.board) {
+      min-width: 34rem;
+    }
+  }
+
+  @media (max-width: 30rem) {
+    .stage,
+    .timeline {
+      padding-inline: var(--space-4);
+    }
+
+    .lane {
+      grid-template-columns: 2.75rem 1fr;
+    }
+  }
+</style>

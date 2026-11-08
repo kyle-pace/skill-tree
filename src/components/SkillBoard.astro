@@ -1,0 +1,380 @@
+---
+// One track of the skill tree, drawn as an SVG at build time. SkillTree.astro adds the
+// interaction. `mini` is the small, label-free version used on the All tracks view.
+import { nodes as allNodes, tracks, type SkillNode } from '../data/skill-tree';
+
+interface Props {
+  trackId: string;
+  mini?: boolean;
+}
+
+const { trackId, mini = false } = Astro.props;
+const track = tracks.find((t) => t.id === trackId)!;
+const nodes = allNodes.filter((n) => n.track === trackId);
+const byId = Object.fromEntries(allNodes.map((n) => [n.id, n]));
+const trackOf = (n: SkillNode) => tracks.find((t) => t.id === n.track)!;
+
+const colorVar = (color: string, ink = false) =>
+  color === 'neutral' ? 'var(--ink-muted)' : `var(--${color}${ink ? '-ink' : ''})`;
+
+const COLW = 140;
+const TIER = 124;
+const TOP = 52;
+const maxTier = Math.max(...nodes.map((n) => n.tier));
+const height = TOP + (maxTier - 1) * TIER + 76;
+const pos = (n: SkillNode) => ({ x: 300 + n.col * COLW, y: TOP + (n.tier - 1) * TIER });
+const kind = (n: SkillNode) => n.kind ?? 'skill';
+const size = (n: SkillNode) => ({ skill: 22, milestone: 24, capstone: 29, secret: 24 })[kind(n)];
+
+function lines(name: string) {
+  if (name.length <= 15) return [name];
+  const words = name.split(' ');
+  let best = [name];
+  let width = Infinity;
+  for (let i = 1; i < words.length; i++) {
+    const a = words.slice(0, i).join(' ');
+    const b = words.slice(i).join(' ');
+    if (Math.max(a.length, b.length) < width) {
+      width = Math.max(a.length, b.length);
+      best = [a, b];
+    }
+  }
+  return best;
+}
+
+const edges = nodes.flatMap((n) =>
+  (n.from ?? []).map((pid) => {
+    const p = byId[pid];
+    const a = pos(p);
+    const b = pos(n);
+    const y1 = a.y + size(p) + (mini ? 2 : 24 + (lines(p.name).length - 1) * 16);
+    const y2 = b.y - size(n) - (n.status === 'active' ? 8 : 4);
+    const mid = (y1 + y2) / 2;
+    return { from: pid, to: n.id, d: `M${a.x} ${y1} C${a.x} ${mid} ${b.x} ${mid} ${b.x} ${y2}` };
+  }),
+);
+
+const star = (r: number) =>
+  Array.from({ length: 10 }, (_, i) => {
+    const angle = (Math.PI / 5) * i - Math.PI / 2;
+    const radius = i % 2 ? r * 0.45 : r;
+    return `${(Math.cos(angle) * radius).toFixed(1)},${(Math.sin(angle) * radius).toFixed(1)}`;
+  }).join(' ');
+
+const roman = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII'];
+const levelName = { sig: 'signature strength', pro: 'proficient', dev: 'still developing' };
+---
+
+<svg
+  class:list={['board', { mini }]}
+  viewBox={`0 0 600 ${height}`}
+  style={`--c: ${colorVar(track.color)}; --c-ink: ${colorVar(track.color, true)}`}
+  role={mini ? undefined : 'group'}
+  aria-hidden={mini ? 'true' : undefined}
+  aria-label={mini ? undefined : `${track.name} track`}
+>
+  {
+    !mini &&
+      Array.from({ length: maxTier }, (_, i) => (
+        <g class="tier">
+          <line x1="44" x2="592" y1={TOP + i * TIER} y2={TOP + i * TIER} />
+          <text x="8" y={TOP + i * TIER + 5}>{roman[i]}</text>
+        </g>
+      ))
+  }
+  <g class="edges">
+    {edges.map((e) => <path class:list={['edge', { 'secret-hidden': byId[e.to].status === 'secret' }]} d={e.d} data-from={e.from} data-to={e.to} />)}
+  </g>
+  <g class="nodes">
+    {
+      nodes.map((n) => {
+        const { x, y } = pos(n);
+        const s = size(n);
+        const k = kind(n);
+        const lv = k === 'skill' ? (n.lv ?? 'pro') : undefined;
+        const label = [
+          n.name,
+          k === 'skill' ? levelName[lv!] : k,
+          n.status === 'active' ? 'in progress' : '',
+          n.status === 'locked' ? 'locked' : '',
+        ]
+          .filter(Boolean)
+          .join(', ');
+        const circumference = 2 * Math.PI * s;
+        return (
+          <g
+            class:list={['node', k, lv && `lv-${lv}`, n.status, { 'secret-hidden': n.status === 'secret' }]}
+            transform={`translate(${x} ${y})`}
+            data-id={n.id}
+            data-t={n.status === 'locked' ? 2027 : (n.t ?? 2027)}
+            tabindex={mini ? undefined : '0'}
+            role={mini ? undefined : 'button'}
+            aria-label={mini ? undefined : label}
+          >
+            {n.status === 'active' && <circle class="ring" r={s + 7} />}
+            {k === 'capstone' && <circle class="halo" r={s + 7} />}
+            {k === 'milestone' || k === 'secret' ? (
+              <rect class="shape" x={-s} y={-s} width={s * 2} height={s * 2} rx="11" />
+            ) : (
+              <circle class="shape" r={s} />
+            )}
+            {lv === 'dev' && (
+              <circle
+                class="arc"
+                r={s}
+                stroke-dasharray={`${(circumference * 0.33).toFixed(1)} ${circumference.toFixed(1)}`}
+                transform="rotate(-90)"
+              />
+            )}
+            <text class="glyph" font-size={n.glyph.length > 3 ? 10 : n.glyph.length > 2 ? 12 : 14}>
+              {n.glyph}
+            </text>
+            {lv === 'sig' && (
+              <g class="star" transform={`translate(${(s * 0.75).toFixed(1)} ${(-s * 0.75).toFixed(1)})`}>
+                <circle r="9.5" />
+                <polygon points={star(6.5)} />
+              </g>
+            )}
+            {(n.cross ?? []).map((cid, i) => {
+              const other = trackOf(byId[cid]);
+              return (
+                <circle
+                  class="portal"
+                  r="6"
+                  cx={(-s * 0.78 - i * 11).toFixed(1)}
+                  cy={(-s * 0.78).toFixed(1)}
+                  style={`fill: ${colorVar(other.color)}`}
+                >
+                  <title>{`Also builds on ${byId[cid].name} (${other.name})`}</title>
+                </circle>
+              );
+            })}
+            {!mini && (
+              <text class="label" y={s + 20}>
+                {lines(n.name).map((line, i) => (
+                  <tspan x="0" dy={i ? 16 : 0}>
+                    {line}
+                  </tspan>
+                ))}
+              </text>
+            )}
+          </g>
+        );
+      })
+    }
+  </g>
+</svg>
+
+<style>
+  .board {
+    display: block;
+    width: 100%;
+    height: auto;
+    overflow: visible;
+  }
+
+  .board:not(.mini) {
+    max-width: 36rem;
+    margin-inline: auto;
+  }
+
+  .tier line {
+    stroke: var(--line);
+    stroke-dasharray: 2 6;
+  }
+
+  .tier text {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    fill: var(--ink-muted);
+  }
+
+  .edge {
+    fill: none;
+    stroke: var(--c);
+    stroke-width: 2.5;
+    stroke-opacity: 0.4;
+    stroke-linecap: round;
+  }
+
+  .edge.lit {
+    stroke-opacity: 1;
+    stroke-width: 3.5;
+  }
+
+  .node {
+    cursor: pointer;
+    outline: none;
+  }
+
+  .shape {
+    fill: color-mix(in oklab, var(--c), var(--bg-raised) 86%);
+    stroke: var(--c);
+    stroke-width: 2.5;
+  }
+
+  .milestone .shape,
+  .secret .shape {
+    fill: color-mix(in oklab, var(--c), var(--bg-raised) 72%);
+  }
+
+  .capstone .shape {
+    fill: color-mix(in oklab, var(--c), var(--bg-raised) 62%);
+    stroke-width: 3;
+  }
+
+  .halo {
+    fill: none;
+    stroke: var(--c);
+    stroke-opacity: 0.35;
+    stroke-width: 2;
+  }
+
+  .lv-sig .shape {
+    fill: var(--c);
+  }
+
+  .lv-dev .shape {
+    fill: var(--bg-raised);
+    stroke-opacity: 0.45;
+    stroke-dasharray: 3 4;
+  }
+
+  .arc {
+    fill: none;
+    stroke: var(--c);
+    stroke-width: 3.5;
+    stroke-linecap: round;
+  }
+
+  .ring {
+    fill: none;
+    stroke: var(--c);
+    stroke-width: 2;
+    stroke-dasharray: 4 5;
+  }
+
+  .locked .shape {
+    fill: var(--bg);
+    stroke: var(--ink-muted);
+    stroke-dasharray: 4 4;
+    stroke-opacity: 0.6;
+  }
+
+  .glyph {
+    font-family: var(--font-mono);
+    text-anchor: middle;
+    dominant-baseline: central;
+    fill: var(--c-ink);
+    pointer-events: none;
+  }
+
+  .lv-sig .glyph {
+    fill: color-mix(in oklab, var(--c), black 62%);
+    font-weight: 700;
+  }
+
+  .locked .glyph {
+    fill: var(--ink-muted);
+  }
+
+  .star circle {
+    fill: var(--bg-raised);
+  }
+
+  .star polygon {
+    fill: var(--sunshine);
+    stroke: color-mix(in oklab, var(--sunshine), black 35%);
+    stroke-width: 1;
+    stroke-linejoin: round;
+  }
+
+  .portal {
+    stroke: var(--bg-raised);
+    stroke-width: 2.5;
+  }
+
+  .label {
+    font-family: var(--font-text);
+    font-size: 13.5px;
+    font-weight: 600;
+    fill: var(--ink);
+    text-anchor: middle;
+    paint-order: stroke;
+    stroke: var(--bg-raised);
+    stroke-width: 5px;
+    stroke-linejoin: round;
+    pointer-events: none;
+  }
+
+  .node:hover .shape,
+  .node:focus-visible .shape {
+    stroke-width: 4;
+    stroke-opacity: 1;
+  }
+
+  .node:focus-visible .label {
+    text-decoration: underline;
+  }
+
+  .node.selected .shape {
+    stroke: var(--ink);
+    stroke-width: 3.5;
+    stroke-opacity: 1;
+  }
+
+  .node.secret-hidden,
+  .edge.secret-hidden {
+    display: none;
+  }
+
+  .node.dormant,
+  .edge.dormant {
+    opacity: 0.12;
+  }
+
+  .node.dormant {
+    pointer-events: none;
+  }
+
+  /* Small version for the All tracks view: shapes only. */
+  .mini .label,
+  .mini .glyph,
+  .mini .star,
+  .mini .portal,
+  .mini .ring,
+  .mini .arc {
+    display: none;
+  }
+
+  .mini .shape {
+    stroke-width: 5;
+  }
+
+  .mini .lv-dev .shape {
+    stroke-opacity: 0.6;
+    stroke-dasharray: 6 6;
+  }
+
+  .mini .edge {
+    stroke-width: 5;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .node,
+    .edge {
+      transition: opacity var(--duration) var(--ease-out);
+    }
+
+    .node.pop .shape {
+      animation: pop var(--duration) var(--ease-out);
+      transform-box: fill-box;
+      transform-origin: center;
+    }
+
+    @keyframes pop {
+      from { scale: 0.6; }
+      to { scale: 1; }
+    }
+  }
+</style>

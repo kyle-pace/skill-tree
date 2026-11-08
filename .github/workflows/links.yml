@@ -1,0 +1,39 @@
+# Checks which of the skill tree's "Read" links are live on kylepace.net
+# (scripts/links.mjs). Weekly, or on demand from the Actions tab. Commits only when
+# something changed; that push starts a Cloudflare deploy.
+name: Read links
+
+on:
+  schedule:
+    - cron: '29 14 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  links:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v5
+
+      # Node 22 runs the script directly; no npm install needed.
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+
+      - name: Check links
+        run: node scripts/links.mjs
+
+      - name: Commit changes
+        run: |
+          git add src/data/links.json
+          if git diff --cached --quiet; then
+            echo "Read links unchanged."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "Update skill tree Read links"
+          git push

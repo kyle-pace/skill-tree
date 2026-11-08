@@ -1,0 +1,25 @@
+{
+  "name": "skill-tree",
+  "version": "0.1.0",
+  "description": "Kyle Pace's career as an RPG skill tree, at kylepace.dev/skill-tree/.",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "astro dev",
+    "links": "node scripts/links.mjs",
+    "build": "node scripts/links.mjs && astro build",
+    "preview": "npm run build && wrangler dev",
+    "astro": "astro"
+  },
+  "dependencies": {
+    "@amplitude/analytics-browser": "^2.49.2",
+    "@amplitude/plugin-session-replay-browser": "^1.36.7",
+    "@astrojs/cloudflare": "^14.4.6",
+    "astro": "^7.4.7",
+    "kp-design": "github:kyle-pace/kp-design#32e8c50"
+  },
+  "devDependencies": {
+    "axe-core": "^4.14.0",
+    "wrangler": "^4.158.0"
+  }
+}

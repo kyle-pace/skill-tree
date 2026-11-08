@@ -1,0 +1,67 @@
+---
+// The career skill tree. Content: src/data/skill-tree.ts. Drawing: src/components/.
+// "Read" links come from src/data/links.json (scripts/links.mjs): only posts and case
+// studies that are live on kylepace.net get one.
+import Base from '../../layouts/Base.astro';
+import { StatusBadge } from 'kp-design';
+import SkillTree from '../../components/SkillTree.astro';
+import { nodes } from '../../data/skill-tree';
+import liveLinks from '../../data/links.json';
+
+const live = liveLinks as Record<string, { href: string; title: string }>;
+const links = Object.fromEntries(nodes.filter((n) => n.read && live[n.read]).map((n) => [n.id, live[n.read!]]));
+---
+
+<Base
+  title="Career skill tree"
+  description="Kyle Pace’s career as an RPG skill tree: restaurants, a UX bootcamp, product, app stores, an MBA and a spin-off. Pick a track or replay it year by year."
+  accent="violet"
+  image="/skill-tree/og.png"
+  imageAlt="My career, as a skill tree: Kyle Pace’s career drawn as an RPG skill tree on kylepace.dev."
+>
+  <header class="intro">
+    <p class="eyebrow"><a href="https://kylepace.dev/">Experiments</a> <StatusBadge status="in-progress" /></p>
+    <h1>My career, as a skill tree.</h1>
+    <p class="lede prose">
+      A resume is a list. Careers feel more like a game: you pick up skills in odd places, and they combine in ways
+      you don’t expect. Thirteen years in restaurants turned out to be great training for stakeholder management.
+    </p>
+  </header>
+
+  <SkillTree links={links} />
+
+  <p class="fine-print prose muted">
+    The levels are my own honest read, not a test score. The attributes are not. Built with AI coding agents, and
+    still being refined. <a href="https://kylepace.dev/">More experiments</a>
+  </p>
+</Base>
+
+<style>
+  .intro {
+    padding-bottom: var(--space-8);
+  }
+
+  .intro h1 {
+    max-width: 18ch;
+  }
+
+  .eyebrow {
+    display: flex;
+    gap: var(--space-2);
+    align-items: center;
+  }
+
+  .eyebrow a {
+    color: inherit;
+  }
+
+  .lede {
+    font-size: var(--step-1);
+    color: var(--ink-muted);
+  }
+
+  .fine-print {
+    margin-top: var(--space-8);
+    font-size: var(--step--1);
+  }
+</style>
