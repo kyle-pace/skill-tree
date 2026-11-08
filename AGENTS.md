@@ -88,8 +88,7 @@ The career skill tree: Kyle's career drawn as an RPG skill tree, at [kylepace.de
 - **All content is in `src/data/skill-tree.ts`**: tracks, nodes, eras, attributes and their lore. The drawing is `src/components/SkillTree.astro` and `SkillBoard.astro`. Change facts in the data file, not the components.
 - **It's its own Cloudflare Worker (`skill-tree`) on the hub's domain.** The routes in `wrangler.jsonc` claim `kylepace.dev/skill-tree` and `/skill-tree/*`; everything else on the domain (favicon, robots.txt, privacy page) is served by the hub.
 - **Everything this site serves lives under `/skill-tree/`**: the page is `src/pages/skill-tree/index.astro`, public files go in `public/skill-tree/`, and built assets go to `/skill-tree/_astro/`. Don't use Astro's `base` option; with the Cloudflare adapter it serves files from the wrong folder.
-- **Header, footer, tokens and display settings come from [kp-design](https://github.com/kyle-pace/kp-design)**, pinned to a commit in package.json. The links passed to them in `src/layouts/Base.astro` match the hub's and are absolute URLs.
+- **The page shell comes from [kp-design](https://github.com/kyle-pace/kp-design)** (`DevLayout`: header, footer, tokens, display settings and analytics), pinned to a commit in package.json. The kylepace.dev links live there, not here.
 - **"Read" links:** a node with `read: "writing/<slug>"` or `"work/<slug>"` links to that post on kylepace.net, but only once it's live there. `scripts/links.mjs` checks before every build and weekly (`.github/workflows/links.yml`), writing `src/data/links.json`. Don't edit that file by hand.
-- Analytics goes to the shared kylepace.dev Amplitude project (`src/lib/analytics.ts`, same private setup as the hub).
 - The share card is `design/og.html`, rendered to `public/skill-tree/og.png`.
 - Run `npm run build` before pushing; it must pass. Cloudflare Workers Builds deploys `main`.

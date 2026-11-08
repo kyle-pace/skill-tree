@@ -22,7 +22,7 @@ npm run preview   # builds, then runs it the way Cloudflare will
 | Tracks, skills, eras, attributes | `src/data/skill-tree.ts` |
 | The tree and its interactions | `src/components/SkillTree.astro`, `SkillBoard.astro` |
 | The page | `src/pages/skill-tree/index.astro` |
-| Layout (header, footer, analytics) | `src/layouts/Base.astro`, `src/lib/analytics.ts` |
+| Page shell (header, footer, analytics) | `DevLayout` from kp-design |
 | Which "Read" links are live | `src/data/links.json`, written by `scripts/links.mjs` |
 | Share card | `design/og.html`, rendered to `public/skill-tree/og.png` |
 
