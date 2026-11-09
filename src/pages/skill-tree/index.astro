@@ -267,7 +267,9 @@ const colorVar = (color: string) => (color === 'neutral' ? 'var(--ink-muted)' : 
     font-weight: 700;
   }
 
+  /* About 70 characters a line (32em of Atkinson body text). */
   .about p {
+    max-width: 32em;
     margin: 0;
   }
 
