@@ -1,5 +1,5 @@
 ---
-// The interactive career skill tree (/labs/skill-tree/). The boards are drawn at build
+// The interactive career skill tree (kylepace.dev/skill-tree/). The boards are drawn at build
 // time by SkillBoard.astro; the script below adds tracks, details, the timeline replay
 // and one secret. All content lives in src/data/skill-tree.ts.
 import SkillBoard from './SkillBoard.astro';
@@ -30,7 +30,7 @@ const counts = (id: string) => {
 };
 const countLine = (id: string) => {
   const c = counts(id);
-  return [`${c.total} skills`, c.sig && `${c.sig} signature`, c.dev && `${c.dev} developing`].filter(Boolean).join(' · ');
+  return [`${c.total} skills`, c.sig && `${c.sig} signature`, c.dev && `${c.dev} developing`].filter(Boolean).join(', ');
 };
 
 // Year to position on the weighted timeline (timeScale in the data file).
@@ -45,17 +45,116 @@ const pct = (year: number) => {
 const quests = visible.filter((n) => n.status === 'active');
 ---
 
-<section class="skill-tree" id="skill-tree" data-view="all">
-  <div class="sheet">
-    <div class="sheet-side">
-    <div class="who">
-      <span class="avatar" aria-hidden="true">KP</span>
-      <div>
-        <p class="class">Director of Product</p>
-        <p class="muted">Level 6 · origin story: the restaurant floor</p>
+<section class="skill-tree" id="skill-tree" data-view="all" aria-label="Skill tree">
+  <div class="index" role="group" aria-label="Tracks">
+    <button type="button" class="tab" data-view="all" aria-pressed="true">
+      <span class="tab-name">All tracks</span>
+      <span class="tab-sub">{tracks.length} tracks</span>
+    </button>
+    {
+      tracks.map((t) => (
+        <button type="button" class="tab" data-view={t.id} aria-pressed="false" style={trackStyle(t.id)}>
+          <span class="tab-name">{t.name}</span>
+          <span class="tab-sub">{counts(t.id).total} skills</span>
+        </button>
+      ))
+    }
+  </div>
+
+  <div class="stage">
+    <div class="panel overview" data-panel="all">
+      <div class="track-head">
+        <h2 tabindex="-1">All tracks</h2>
+        <p class="track-sub">{visible.length} skills across {tracks.length} tracks. Open one to see its tree.</p>
+      </div>
+      <div class="sketches">
+        {
+          tracks.map((t) => (
+            <div class="mini" style={trackStyle(t.id)} data-track={t.id}>
+              <button type="button" class="mini-head" data-open={t.id}>
+                <span class="mini-name">{t.name}</span>
+                <span class="mini-sub">{countLine(t.id)}</span>
+              </button>
+              <SkillBoard trackId={t.id} mini />
+            </div>
+          ))
+        }
       </div>
     </div>
-    <ul class="legend" aria-label="How to read the tree">
+    {
+      tracks.map((t) => (
+        <div class="panel track" data-panel={t.id} hidden style={trackStyle(t.id)}>
+          <div class="track-head">
+            <h2 tabindex="-1">{t.name}</h2>
+            <p class="track-sub">
+              {t.sub}. {countLine(t.id)}.
+            </p>
+            <p class="track-blurb">{t.blurb}</p>
+          </div>
+          <div class="board-scroll">
+            <SkillBoard trackId={t.id} />
+          </div>
+        </div>
+      ))
+    }
+  </div>
+
+  <div class="timeline">
+    <div class="tl-top">
+      <p class="tl-now" aria-live="polite">
+        <span class="tl-year" data-year>Now</span>
+        <span class="tl-era" data-era>Local Public</span>
+      </p>
+      <div class="tl-buttons">
+        <button type="button" class="tl-play" data-play>Replay my career</button>
+        <button type="button" class="tl-small" data-speed aria-label="Playback speed: 1 times">1×</button>
+        <button type="button" class="tl-small" data-now>Now</button>
+      </div>
+    </div>
+    <p class="tl-ticker" data-ticker></p>
+    <div class="lanes">
+      {
+        [0, 1].map((lane) => (
+          <div class="lane">
+            <span class="lane-name">{lane ? 'School' : 'Work'}</span>
+            <div class="lane-track">
+              {eras
+                .filter((e) => e.lane === lane)
+                .map((e) => (
+                  <button
+                    type="button"
+                    class="era"
+                    data-jump={e.from}
+                    style={`left: ${pct(e.from)}%; width: ${pct(e.to) - pct(e.from)}%; ${trackStyle(e.track)}`}
+                    title={e.name}
+                    aria-label={`Jump to ${e.name} (${Math.floor(e.from)})`}
+                  />
+                ))}
+              <span class="playhead" aria-hidden="true" data-playhead />
+            </div>
+          </div>
+        ))
+      }
+      <div class="lane">
+        <label class="lane-name" for="tl-scrub">Year</label>
+        <div class="lane-track scrub-wrap">
+          <input type="range" id="tl-scrub" min="0" max="100" step="0.1" value="100" data-scrub />
+          <div class="ticks" aria-hidden="true">
+            {timeTicks.map((y, i) => (
+              <span class:list={{ last: i === timeTicks.length - 1, minor: i % 2 === 1 && i < timeTicks.length - 1 }} style={`left: ${pct(y)}%`}>
+                {i === timeTicks.length - 1 ? 'Now' : y}
+              </span>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+    <p class="tl-note">Not to scale: the long early chapters are squeezed so the busy recent years have room.</p>
+  </div>
+
+  <div class="key">
+    <h2>Key</h2>
+    <ul>
       <li>
         <svg viewBox="-14 -14 28 28" aria-hidden="true"><circle r="10" class="lg-sig" /><polygon class="lg-star" points="7,-12 8.4,-8.9 11.8,-8.6 9.2,-6.4 10,-3 7,-4.8 4,-3 4.8,-6.4 2.2,-8.6 5.6,-8.9" /></svg>
         Signature strength
@@ -65,154 +164,38 @@ const quests = visible.filter((n) => n.status === 'active');
         <svg viewBox="-14 -14 28 28" aria-hidden="true"><circle r="10" class="lg-dev" /><circle r="10" class="lg-arc" transform="rotate(-90)" /></svg>
         Still developing
       </li>
-      <li><svg viewBox="-14 -14 28 28" aria-hidden="true"><rect x="-10" y="-10" width="20" height="20" rx="6" class="lg-pro" /></svg>Milestone</li>
+      <li><svg viewBox="-14 -14 28 28" aria-hidden="true"><rect x="-10" y="-10" width="20" height="20" rx="4" class="lg-pro" /></svg>Milestone</li>
       <li><svg viewBox="-14 -14 28 28" aria-hidden="true"><circle r="12" class="lg-halo" /><circle r="8" class="lg-cap" /></svg>Capstone</li>
       <li><svg viewBox="-14 -14 28 28" aria-hidden="true"><circle r="5" class="lg-dot" /></svg>Builds on another track</li>
     </ul>
-    </div>
-    <dl class="stats" aria-label="Attributes, out of 20">
+  </div>
+
+  <aside class="detail" aria-label="Skill details">
+    <div class="detail-inner" data-detail aria-live="polite">
+      <h2>Pick a skill</h2>
+      <p>
+        Open a track, then choose any skill to see where it came from and what it leads to. Stars mark my signature
+        strengths; dashed rings are things I’m still building.
+      </p>
+      <p>Or press <strong>Replay my career</strong> to watch the whole tree fill in, one year at a time.</p>
       {
-        stats.map((s) => (
-          <div class="stat" style={`--c: ${colorVar(s.color)}`}>
-            <dt>{s.key}</dt>
-            <dd>
-              <span class="bar" aria-hidden="true">
-                <span style={`width: ${(s.value / 20) * 100}%`} />
-              </span>
-              <span class="value">{s.value}</span>
-              <span class="why">{s.why}</span>
-            </dd>
-          </div>
-        ))
+        quests.length > 0 && (
+          <>
+            <h3>Quests in progress</h3>
+            <ul class="rel">
+              {quests.map((q) => (
+                <li>
+                  <button type="button" data-go={q.id} style={trackStyle(q.track)}>
+                    {q.name}
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </>
+        )
       }
-    </dl>
-
-  </div>
-
-  <div class="layout">
-    <div class="game">
-      <div class="tabs" role="toolbar" aria-label="Tracks">
-        <button type="button" class="tab" data-view="all" aria-pressed="true">All tracks</button>
-        {
-          tracks.map((t) => (
-            <button type="button" class="tab" data-view={t.id} aria-pressed="false" style={trackStyle(t.id)}>
-              <span class="dot" aria-hidden="true" />
-              {t.name}
-            </button>
-          ))
-        }
-      </div>
-
-      <div class="stage">
-        <div class="panel overview" data-panel="all">
-          {
-            tracks.map((t) => (
-              <div class="mini-card" style={trackStyle(t.id)} data-track={t.id}>
-                <button type="button" class="mini-head" data-open={t.id}>
-                  <span class="mini-name">{t.name}</span>
-                  <span class="mini-sub">{countLine(t.id)}</span>
-                </button>
-                <SkillBoard trackId={t.id} mini />
-              </div>
-            ))
-          }
-        </div>
-        {
-          tracks.map((t) => (
-            <div class="panel track" data-panel={t.id} hidden style={trackStyle(t.id)}>
-              <div class="track-head">
-                <h2>{t.name}</h2>
-                <p class="track-sub">{t.sub} · {countLine(t.id)}</p>
-                <p class="track-blurb">{t.blurb}</p>
-              </div>
-              <SkillBoard trackId={t.id} />
-            </div>
-          ))
-        }
-      </div>
-
-      <div class="timeline">
-        <div class="tl-top">
-          <p class="tl-now" aria-live="polite">
-            <span class="tl-year" data-year>Now</span>
-            <span class="tl-era" data-era>Local Public</span>
-          </p>
-          <div class="tl-buttons">
-            <button type="button" class="tl-play" data-play>Replay my career</button>
-            <button type="button" class="tl-small" data-speed aria-label="Playback speed: 1 times">1×</button>
-            <button type="button" class="tl-small" data-now>Now</button>
-          </div>
-        </div>
-        <p class="tl-ticker" data-ticker></p>
-        <div class="lanes">
-          {
-            [0, 1].map((lane) => (
-              <div class="lane">
-                <span class="lane-name">{lane ? 'School' : 'Work'}</span>
-                <div class="lane-track">
-                  {eras
-                    .filter((e) => e.lane === lane)
-                    .map((e) => (
-                      <button
-                        type="button"
-                        class="era"
-                        data-jump={e.from}
-                        style={`left: ${pct(e.from)}%; width: ${pct(e.to) - pct(e.from)}%; ${trackStyle(e.track)}`}
-                        title={e.name}
-                        aria-label={`Jump to ${e.name} (${Math.floor(e.from)})`}
-                      />
-                    ))}
-                  <span class="playhead" aria-hidden="true" data-playhead />
-                </div>
-              </div>
-            ))
-          }
-          <div class="lane">
-            <label class="lane-name" for="tl-scrub">Year</label>
-            <div class="lane-track scrub-wrap">
-              <input type="range" id="tl-scrub" min="0" max="100" step="0.1" value="100" data-scrub />
-              <div class="ticks" aria-hidden="true">
-                {timeTicks.map((y, i) => (
-                  <span class:list={{ last: i === timeTicks.length - 1, minor: i % 2 === 1 && i < timeTicks.length - 1 }} style={`left: ${pct(y)}%`}>
-                    {i === timeTicks.length - 1 ? 'Now' : y}
-                  </span>
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
-        <p class="tl-note">Not to scale: the long early chapters are squeezed so the busy recent years have room.</p>
-      </div>
     </div>
-
-    <aside class="detail" aria-label="Skill details">
-      <div class="detail-inner" data-detail aria-live="polite">
-        <p class="eyebrow">How to play</p>
-        <h2>Pick a skill</h2>
-        <p>
-          Open a track, then choose any skill to see where it came from and what it leads to. Stars mark my signature
-          strengths; dashed rings are things I’m still building.
-        </p>
-        <p>Or press <strong>Replay my career</strong> to watch the whole tree fill in, one year at a time.</p>
-        {
-          quests.length > 0 && (
-            <>
-              <h3>Quests in progress</h3>
-              <ul class="rel">
-                {quests.map((q) => (
-                  <li>
-                    <button type="button" data-go={q.id} style={trackStyle(q.track)}>
-                      {q.name}
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            </>
-          )
-        }
-      </div>
-    </aside>
-  </div>
+  </aside>
 </section>
 
 <script type="application/json" id="skill-tree-links" set:html={JSON.stringify(links)} />
@@ -258,6 +241,9 @@ const quests = visible.filter((n) => n.status === 'active');
       history.replaceState(null, '', view === 'all' ? location.pathname : `#${view}`);
     } catch {}
     if (focusPanel) root.querySelector<HTMLElement>(`[data-panel="${view}"] h2`)?.focus();
+    // On phones the tree scrolls sideways; open it centered on the trunk, not cut off.
+    const scroller = root.querySelector<HTMLElement>(`[data-panel="${view}"] .board-scroll`);
+    if (scroller) scroller.scrollLeft = (scroller.scrollWidth - scroller.clientWidth) / 2;
     paint();
   }
 
@@ -284,7 +270,7 @@ const quests = visible.filter((n) => n.status === 'active');
     pro: { name: 'Proficient', note: 'Solid, and something I use regularly.' },
     dev: { name: 'Still developing', note: 'Real experience, but I’m still building this one.' },
   };
-  const kindName = { skill: 'Skill', milestone: 'Milestone', capstone: 'Capstone', secret: 'Secret' };
+  const kindName = { skill: 'Skill', milestone: 'Milestone', capstone: 'Capstone', secret: 'Secret skill' };
 
   function relButtons(ids: string[], here: string) {
     const list = ids.filter(isShown);
@@ -307,17 +293,16 @@ const quests = visible.filter((n) => n.status === 'active');
     const t = trackById[n.track];
     const lv = kind === 'skill' ? levelInfo[n.lv ?? 'pro'] : null;
     const children = nodes.filter((m) => (m.from ?? []).includes(id) || (m.cross ?? []).includes(id)).map((m) => m.id);
-    const status =
-      n.status === 'active' ? '<span class="pill active">In progress</span>' : n.status === 'locked' ? '<span class="pill">Locked</span>' : '';
+    const status = n.status === 'active' ? ', in progress' : n.status === 'locked' ? ', locked' : '';
     const link = links[id];
     detail.innerHTML = `
-      <p class="pills" style="${styleFor(n.track)}"><span class="pill track">${t.name}</span><span class="pill">${kindName[kind]}</span>${status}</p>
+      <p class="meta" style="${styleFor(n.track)}">${kindName[kind]} in ${t.name}${status}</p>
       <h2 tabindex="-1">${n.name}</h2>
       <p class="when">${n.when}</p>
       ${lv ? `<p class="level level-${n.lv ?? 'pro'}" style="${styleFor(n.track)}"><strong>${lv.name}</strong> ${lv.note}</p>` : ''}
       <p>${n.lore}</p>
       ${n.effects?.length ? `<ul class="effects">${n.effects.map((e) => `<li>${e}</li>`).join('')}</ul>` : ''}
-      ${link ? `<p><a class="read" href="${link.href}">Read: ${link.title} <span aria-hidden="true">→</span></a></p>` : ''}
+      ${link ? `<p><a class="read" href="${link.href}">Read: ${link.title}</a></p>` : ''}
       <h3>Builds on</h3>
       ${[...(n.from ?? []), ...(n.cross ?? [])].length ? relButtons([...(n.from ?? []), ...(n.cross ?? [])], n.track) : '<p class="muted none">A starting point</p>'}
       <h3>Leads to</h3>
@@ -402,7 +387,7 @@ const quests = visible.filter((n) => n.status === 'active');
           void (el as SVGGElement).getBBox();
           el.classList.add('pop');
         });
-        ticker.innerHTML = `<span style="${styleFor(n.track)}"><span class="dot"></span>${Math.floor(n.t!)}</span> ${n.name} <span class="muted">· ${trackById[n.track].name}</span>`;
+        ticker.innerHTML = `<strong style="${styleFor(n.track)}">${Math.floor(n.t!)}</strong> Unlocked ${n.name}, in ${trackById[n.track].name}`;
       }
     }
     paint();
@@ -481,17 +466,20 @@ const quests = visible.filter((n) => n.status === 'active');
     if (node) select(node.dataset.id!);
   });
 
-  nodeEls.forEach((el) => {
-    el.addEventListener('keydown', (event) => {
+  // Only the full-size boards take keyboard focus. The mini sketches get no focus or key
+  // listeners, because Chrome makes any SVG element with one focusable.
+  nodeEls.filter((el) => !el.closest('.mini')).forEach((el) => {
+    const hit = el.querySelector<SVGGElement>('.hit')!;
+    hit.addEventListener('keydown', (event) => {
       if (event.key === 'Enter' || event.key === ' ') {
         event.preventDefault();
         select(el.dataset.id!);
       }
     });
+    hit.addEventListener('focus', () => light(el.dataset.id!));
+    hit.addEventListener('blur', () => light(state.selected));
     el.addEventListener('pointerenter', () => light(el.dataset.id!));
     el.addEventListener('pointerleave', () => light(state.selected));
-    el.addEventListener('focus', () => light(el.dataset.id!));
-    el.addEventListener('blur', () => light(state.selected));
   });
 
   // One secret, for people who remember the old cheat code.
@@ -517,298 +505,178 @@ const quests = visible.filter((n) => n.status === 'active');
 </script>
 
 <style>
+  /* The page is a character sheet; this is its drawing area and notes. design/PLAN.md. */
   .skill-tree {
+    --grid-major: color-mix(in oklab, var(--line), var(--ink) 16%);
+    width: min(100% - 2 * var(--gutter), 84rem);
+    margin-inline: auto;
     display: grid;
-    gap: var(--space-6);
-  }
-
-  /* ---------- Character sheet ---------- */
-  .sheet {
-    display: grid;
-    gap: var(--space-6) var(--space-8);
-    grid-template-columns: minmax(15rem, 20rem) minmax(0, 1fr);
+    grid-template-columns: 12.5rem minmax(0, 1fr) 21rem;
+    grid-template-areas:
+      'index stage detail'
+      'index time detail'
+      'index key detail';
+    grid-template-rows: auto auto 1fr;
+    gap: var(--space-6) var(--space-6);
     align-items: start;
-    padding: var(--space-6);
-    background: var(--bg-raised);
-    border: 1px solid var(--line);
-    border-radius: var(--radius);
-  }
-
-  .sheet-side {
-    display: grid;
-    gap: var(--space-6);
   }
 
   .panel[hidden] {
     display: none;
   }
 
-  .who {
-    display: flex;
-    gap: var(--space-4);
-    align-items: center;
-  }
-
-  .avatar {
+  /* ---------- Track index: a binder's tabs, colored on the left edge ---------- */
+  .index {
+    grid-area: index;
     display: grid;
-    place-items: center;
-    width: 3.25rem;
-    height: 3.25rem;
-    flex: none;
-    border-radius: 1rem;
-    font-family: var(--font-display);
-    font-weight: 700;
-    color: color-mix(in oklab, var(--accent), black 60%);
-    background:
-      radial-gradient(circle at 30% 25%, color-mix(in oklab, var(--accent), white 45%), transparent 60%),
-      var(--accent);
-  }
-
-  .who p {
-    margin: 0;
-    line-height: 1.3;
-  }
-
-  .class {
-    font-family: var(--font-display);
-    font-weight: 700;
-    font-size: var(--step-1);
-  }
-
-  .who .muted {
-    font-size: var(--step--1);
-    margin-top: var(--space-1);
-  }
-
-  .stats {
-    margin: 0;
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(11rem, 1fr));
-    gap: var(--space-3) var(--space-6);
-  }
-
-  .stat {
-    display: grid;
-    grid-template-columns: 3.25rem 1fr;
-    align-items: center;
-    column-gap: var(--space-2);
-  }
-
-  .stat dt {
-    font-family: var(--font-mono);
-    font-size: var(--step--1);
-    font-weight: 400;
-    letter-spacing: 0.04em;
-  }
-
-  .stat dd {
-    margin: 0;
-    display: grid;
-    grid-template-columns: 1fr 1.75rem;
-    align-items: center;
-    gap: 0 var(--space-2);
-  }
-
-  .bar {
-    height: 0.5rem;
-    border-radius: 999px;
-    background: color-mix(in oklab, var(--ink), transparent 90%);
-    overflow: hidden;
-  }
-
-  .bar span {
-    display: block;
-    height: 100%;
-    border-radius: inherit;
-    background: var(--c);
-  }
-
-  .value {
-    font-family: var(--font-mono);
-    font-size: var(--step--1);
-    text-align: right;
-    font-variant-numeric: tabular-nums;
-  }
-
-  .why {
-    grid-column: 1 / -1;
-    font-size: 0.8rem;
-    color: var(--ink-muted);
-    line-height: 1.35;
-  }
-
-  .legend {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-    display: grid;
-    grid-template-columns: repeat(2, auto);
-    justify-content: start;
-    gap: var(--space-1) var(--space-6);
-    font-size: var(--step--1);
-    color: var(--ink-muted);
-  }
-
-  .legend li {
-    display: flex;
-    align-items: center;
-    gap: var(--space-2);
-  }
-
-  .legend svg {
-    width: 1.5rem;
-    height: 1.5rem;
-    flex: none;
-    overflow: visible;
-  }
-
-  .lg-sig { fill: var(--ink-muted); }
-  .lg-star { fill: var(--sunshine); stroke: var(--bg-raised); stroke-width: 1; }
-  .lg-pro { fill: var(--bg-raised); stroke: var(--ink-muted); stroke-width: 2; }
-  .lg-dev { fill: none; stroke: var(--ink-muted); stroke-opacity: 0.5; stroke-width: 2; stroke-dasharray: 3 3; }
-  .lg-arc { fill: none; stroke: var(--ink-muted); stroke-width: 3; stroke-dasharray: 21 63; stroke-linecap: round; }
-  .lg-halo { fill: none; stroke: var(--ink-muted); stroke-opacity: 0.4; stroke-width: 1.5; }
-  .lg-cap { fill: var(--bg-raised); stroke: var(--ink-muted); stroke-width: 2.5; }
-  .lg-dot { fill: var(--violet); }
-
-  /* ---------- Layout ---------- */
-  .layout {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) 21rem;
-    gap: var(--space-6);
-    align-items: start;
-  }
-
-  .game {
-    background: var(--bg-raised);
-    border: 1px solid var(--line);
-    border-radius: var(--radius);
-    overflow: hidden;
-  }
-
-  .tabs {
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--space-2);
-    padding: var(--space-4);
-    border-bottom: 1px solid var(--line);
+    gap: var(--space-1);
+    position: sticky;
+    top: var(--space-4);
   }
 
   .tab {
-    display: inline-flex;
-    align-items: center;
-    gap: var(--space-2);
-    min-height: 2.5rem;
-    padding: 0 var(--space-4);
-    border: 1px solid var(--line);
-    border-radius: 999px;
-    background: var(--bg);
+    display: grid;
+    gap: 0;
+    min-height: 2.75rem;
+    padding: var(--space-2) var(--space-3) var(--space-2) calc(var(--space-3) + 6px);
+    border: 2px solid transparent;
+    border-radius: var(--radius);
+    box-shadow: inset 6px 0 0 var(--c, var(--ink));
+    background: none;
     color: var(--ink);
     font: inherit;
-    font-size: var(--step--1);
-    font-weight: 600;
+    text-align: left;
+    line-height: 1.25;
     cursor: pointer;
   }
 
-  .tab .dot {
-    width: 0.6rem;
-    height: 0.6rem;
-    border-radius: 999px;
-    background: var(--c);
+  .tab-name {
+    font-weight: 600;
+  }
+
+  .tab-sub {
+    font-size: var(--step--1);
+    color: var(--ink-muted);
   }
 
   .tab[aria-pressed='true'] {
-    background: var(--ink);
     border-color: var(--ink);
-    color: var(--bg);
+    background: var(--bg-raised);
   }
 
-  .stage {
-    padding: var(--space-6);
-  }
-
-  .overview {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(min(100%, 12.5rem), 1fr));
-    gap: var(--space-4);
-  }
-
-  .mini-card {
-    display: flex;
-    flex-direction: column;
-    border: 1px solid var(--line);
-    border-radius: var(--radius-sm);
-    background: color-mix(in oklab, var(--c), var(--bg-raised) 94%);
-    padding-bottom: var(--space-3);
-  }
-
-  .mini-card :global(svg) {
-    padding: 0 var(--space-4);
-    cursor: pointer;
-  }
-
-  .mini-head {
-    display: grid;
-    gap: 0.1rem;
-    padding: var(--space-3) var(--space-4) var(--space-2);
-    border: 0;
-    background: none;
-    text-align: left;
-    font: inherit;
-    color: var(--ink);
-    cursor: pointer;
-  }
-
-  .mini-name {
-    font-family: var(--font-display);
+  .tab[aria-pressed='true'] .tab-name {
     font-weight: 700;
-    line-height: 1.25;
-    text-decoration: underline;
-    text-decoration-color: var(--c);
-    text-decoration-thickness: 0.15em;
-    text-underline-offset: 0.25em;
   }
 
-  .mini-sub {
-    font-size: 0.8rem;
-    color: var(--ink-muted);
+  /* ---------- The drawing area: engineering paper, the one bold thing ---------- */
+  .stage {
+    grid-area: stage;
+    min-height: 34rem;
+    padding: var(--space-6);
+    border: 2px solid var(--ink);
+    border-radius: var(--radius);
+    background-color: var(--bg);
+    background-image:
+      linear-gradient(var(--grid-major) 1px, transparent 1px),
+      linear-gradient(90deg, var(--grid-major) 1px, transparent 1px),
+      linear-gradient(var(--line) 1px, transparent 1px),
+      linear-gradient(90deg, var(--line) 1px, transparent 1px);
+    background-size:
+      calc(var(--grid) * 4) calc(var(--grid) * 4),
+      calc(var(--grid) * 4) calc(var(--grid) * 4),
+      var(--grid) var(--grid),
+      var(--grid) var(--grid);
+    background-position: -1px -1px;
   }
 
   .track-head {
     max-width: 40rem;
-    margin-bottom: var(--space-4);
+    margin-bottom: var(--space-6);
   }
 
   .track-head h2 {
+    display: inline;
     margin: 0;
+    padding: 0 var(--space-1);
+    margin-inline-start: calc(-1 * var(--space-1));
+    background: var(--bg);
     font-size: var(--step-2);
-    text-decoration: underline;
-    text-decoration-color: var(--c);
-    text-decoration-thickness: 0.12em;
-    text-underline-offset: 0.2em;
+    font-weight: 700;
+    line-height: 1.15;
+    letter-spacing: -0.015em;
+    box-decoration-break: clone;
+    -webkit-box-decoration-break: clone;
   }
 
   .track-head h2:focus {
     outline: none;
   }
 
-  .track-sub {
+  .track-head p {
+    width: fit-content;
     margin: var(--space-2) 0 0;
-    font-size: var(--step--1);
+    background: var(--bg);
+  }
+
+  .track-sub {
     font-weight: 600;
-    color: var(--c-ink);
+    color: var(--c-ink, var(--ink));
   }
 
   .track-blurb {
-    margin: var(--space-2) 0 0;
+    color: var(--ink-muted);
+  }
+
+  .sketches {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 10.5rem), 1fr));
+    gap: var(--space-8) var(--space-6);
+  }
+
+  .mini {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+  }
+
+  .mini :global(svg) {
+    cursor: pointer;
+  }
+
+  .mini-head {
+    display: grid;
+    gap: 0;
+    width: fit-content;
+    min-height: 2.75rem;
+    padding: var(--space-1) var(--space-2);
+    margin-inline-start: calc(-1 * var(--space-2));
+    border: 0;
+    border-radius: var(--radius);
+    background: var(--bg);
+    text-align: left;
+    font: inherit;
+    line-height: 1.3;
+    color: var(--ink);
+    cursor: pointer;
+  }
+
+  .mini-name {
+    font-weight: 700;
+    text-decoration: underline;
+    text-decoration-color: var(--c);
+    text-decoration-thickness: 3px;
+    text-underline-offset: 0.25em;
+  }
+
+  .mini-sub {
+    margin-top: var(--space-1);
+    font-size: var(--step--1);
     color: var(--ink-muted);
   }
 
   /* ---------- Timeline ---------- */
   .timeline {
-    padding: var(--space-4) var(--space-6) var(--space-6);
-    border-top: 1px solid var(--line);
-    background: color-mix(in oklab, var(--ink), var(--bg-raised) 97%);
+    grid-area: time;
   }
 
   .tl-top {
@@ -822,69 +690,61 @@ const quests = visible.filter((n) => n.status === 'active');
   .tl-now {
     margin: 0;
     display: flex;
+    flex-wrap: wrap;
     align-items: baseline;
-    gap: var(--space-3);
+    gap: 0 var(--space-3);
   }
 
   .tl-year {
-    font-family: var(--font-display);
+    font-size: var(--step-3);
     font-weight: 700;
-    font-size: var(--step-2);
+    line-height: 1;
     font-variant-numeric: tabular-nums;
-    min-width: 3ch;
+    min-width: 4ch;
   }
 
   .tl-era {
+    font-weight: 600;
     color: var(--ink-muted);
   }
 
   .tl-buttons {
     display: flex;
+    flex-wrap: wrap;
     gap: var(--space-2);
   }
 
   .tl-play,
   .tl-small {
     min-height: 2.75rem;
+    min-width: 2.75rem;
     padding: 0 var(--space-4);
-    border-radius: 999px;
+    border: 2px solid var(--ink);
+    border-radius: var(--radius);
     font: inherit;
-    font-size: var(--step--1);
-    font-weight: 600;
+    font-weight: 700;
     cursor: pointer;
   }
 
   .tl-play {
-    border: 1px solid var(--accent-ink);
-    background: var(--accent-ink);
+    background: var(--ink);
     color: var(--bg);
   }
 
   .tl-small {
-    border: 1px solid var(--line);
-    background: var(--bg);
+    background: none;
     color: var(--ink);
   }
 
   .tl-ticker {
     min-height: 1.6em;
-    margin: var(--space-2) 0 var(--space-3);
-    font-size: var(--step--1);
+    margin: var(--space-3) 0;
   }
 
-  .tl-ticker :global(.dot) {
-    display: inline-block;
-    width: 0.55rem;
-    height: 0.55rem;
-    margin-right: var(--space-2);
-    border-radius: 999px;
-    background: var(--c);
-  }
-
-  .tl-ticker :global(> span:first-child) {
-    font-family: var(--font-mono);
+  .tl-ticker :global(strong) {
     color: var(--c-ink);
-    margin-right: var(--space-1);
+    margin-right: var(--space-2);
+    font-variant-numeric: tabular-nums;
   }
 
   .lanes {
@@ -900,26 +760,26 @@ const quests = visible.filter((n) => n.status === 'active');
   }
 
   .lane-name {
-    font-size: 0.8rem;
+    font-size: var(--step--1);
     color: var(--ink-muted);
   }
 
   .lane-track {
     position: relative;
-    height: 0.75rem;
-    border-radius: 999px;
-    background: color-mix(in oklab, var(--ink), transparent 93%);
+    height: 1rem;
+    border: 1px solid var(--rule);
+    border-radius: 2px;
   }
 
-  /* Each chapter is a slim colored bar; click one to jump the timeline there. */
+  /* Each chapter is a colored bar; click one to jump the timeline there. */
   .era {
     position: absolute;
-    top: 0;
-    bottom: 0;
+    top: 1px;
+    bottom: 1px;
     padding: 0;
     border: 0;
-    border-left: 2px solid var(--bg-raised);
-    border-radius: 999px;
+    border-left: 2px solid var(--bg);
+    border-radius: 1px;
     background: var(--c);
     cursor: pointer;
   }
@@ -936,18 +796,17 @@ const quests = visible.filter((n) => n.status === 'active');
 
   .playhead {
     position: absolute;
-    top: -0.2rem;
-    bottom: -0.2rem;
+    top: -0.35rem;
+    bottom: -0.35rem;
     width: 3px;
     margin-left: -1.5px;
-    border-radius: 2px;
     background: var(--ink);
     pointer-events: none;
   }
 
   .scrub-wrap {
     height: auto;
-    background: none;
+    border: 0;
   }
 
   .scrub-wrap input {
@@ -959,16 +818,10 @@ const quests = visible.filter((n) => n.status === 'active');
 
   .ticks {
     position: relative;
-    height: 1.1rem;
-    font-family: var(--font-mono);
-    font-size: 0.72rem;
+    height: 1.25rem;
+    font-size: var(--step--1);
     color: var(--ink-muted);
-  }
-
-  .tl-note {
-    margin: var(--space-2) 0 0;
-    font-size: 0.8rem;
-    color: var(--ink-muted);
+    font-variant-numeric: tabular-nums;
   }
 
   .ticks span {
@@ -984,26 +837,78 @@ const quests = visible.filter((n) => n.status === 'active');
     translate: -100% 0;
   }
 
-  @media (max-width: 40rem) {
-    .ticks span.minor {
-      display: none;
-    }
+  .tl-note {
+    margin: var(--space-3) 0 0;
+    font-size: var(--step--1);
+    color: var(--ink-muted);
   }
 
-  /* ---------- Detail panel ---------- */
+  /* ---------- Key ---------- */
+  .key {
+    grid-area: key;
+    padding-top: var(--space-4);
+    border-top: 1px solid var(--rule);
+  }
+
+  .key h2 {
+    margin: 0 0 var(--space-2);
+    font-size: var(--step--1);
+    font-weight: 700;
+  }
+
+  .key ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2) var(--space-6);
+    font-size: var(--step--1);
+    color: var(--ink-muted);
+  }
+
+  .key li {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+  }
+
+  .key svg {
+    width: 1.5rem;
+    height: 1.5rem;
+    flex: none;
+    overflow: visible;
+  }
+
+  .lg-sig { fill: var(--ink-muted); }
+  .lg-star { fill: var(--sunshine); stroke: color-mix(in oklab, var(--sunshine), black 40%); stroke-width: 1; }
+  .lg-pro { fill: var(--bg); stroke: var(--ink-muted); stroke-width: 2; }
+  .lg-dev { fill: none; stroke: var(--ink-muted); stroke-opacity: 0.6; stroke-width: 2; stroke-dasharray: 3 3; }
+  .lg-arc { fill: none; stroke: var(--ink-muted); stroke-width: 3; stroke-dasharray: 21 63; stroke-linecap: round; }
+  .lg-halo { fill: none; stroke: var(--ink-muted); stroke-opacity: 0.6; stroke-width: 1.5; }
+  .lg-cap { fill: var(--bg); stroke: var(--ink-muted); stroke-width: 2.5; }
+  .lg-dot { fill: var(--violet); }
+
+  /* ---------- Notes: the skill detail, on card stock ---------- */
   .detail {
+    grid-area: detail;
     position: sticky;
-    top: var(--space-6);
+    top: var(--space-4);
+    /* Stops 5rem short of the bottom so the fixed display settings button never covers it. */
+    max-height: calc(100dvh - 6rem);
+    overflow-y: auto;
     padding: var(--space-6);
     background: var(--bg-raised);
-    border: 1px solid var(--line);
+    border: 2px solid var(--ink);
     border-radius: var(--radius);
-    scroll-margin-top: var(--space-6);
+    scroll-margin-top: var(--space-4);
   }
 
   .detail :global(h2) {
-    margin: var(--space-2) 0 var(--space-1);
+    margin: var(--space-1) 0 var(--space-1);
     font-size: var(--step-2);
+    font-weight: 700;
+    line-height: 1.15;
   }
 
   .detail :global(h2:focus) {
@@ -1012,15 +917,21 @@ const quests = visible.filter((n) => n.status === 'active');
 
   .detail :global(h3) {
     margin: var(--space-6) 0 var(--space-2);
+    padding-top: var(--space-3);
+    border-top: 1px solid var(--rule);
     font-size: var(--step--1);
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    color: var(--ink-muted);
-    font-family: var(--font-text);
+    font-weight: 700;
   }
 
   .detail :global(p) {
     margin: 0 0 var(--space-3);
+  }
+
+  .detail :global(.meta) {
+    margin: 0;
+    font-size: var(--step--1);
+    font-weight: 700;
+    color: var(--c-ink);
   }
 
   .detail :global(.when) {
@@ -1028,46 +939,16 @@ const quests = visible.filter((n) => n.status === 'active');
     color: var(--ink-muted);
   }
 
-  .detail :global(.pills) {
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--space-2);
-    margin: 0;
-  }
-
-  .detail :global(.pill) {
-    padding: 0.05em 0.65em;
-    border: 1px solid var(--line);
-    border-radius: 999px;
-    font-size: 0.8rem;
-    font-weight: 600;
-    color: var(--ink-muted);
-  }
-
-  .detail :global(.pill.track) {
-    border-color: var(--c);
-    background: color-mix(in oklab, var(--c), var(--bg-raised) 82%);
-    color: var(--ink);
-  }
-
-  .detail :global(.pill.active) {
-    border-color: var(--accent-ink);
-    color: var(--accent-ink);
-  }
-
   .detail :global(.level) {
     display: grid;
     gap: 0.1rem;
-    padding: var(--space-3) var(--space-4);
-    border-radius: var(--radius-sm);
+    padding: var(--space-1) 0 var(--space-1) var(--space-4);
     border-left: 4px solid var(--c);
-    background: color-mix(in oklab, var(--c), var(--bg-raised) 88%);
     font-size: var(--step--1);
   }
 
   .detail :global(.level-dev) {
     border-left-style: dashed;
-    background: var(--bg);
   }
 
   .detail :global(.level-sig strong::before) {
@@ -1086,101 +967,149 @@ const quests = visible.filter((n) => n.status === 'active');
 
   .detail :global(.effects li::before) {
     content: '+ ';
-    font-family: var(--font-mono);
+    font-weight: 700;
     color: var(--lime-ink);
   }
 
   .detail :global(.read) {
-    font-weight: 600;
+    font-weight: 700;
   }
 
   .detail :global(.rel) {
     list-style: none;
     margin: 0;
     padding: 0;
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--space-2);
+    display: grid;
+    gap: var(--space-1);
   }
 
   .detail :global(.rel button) {
-    min-height: 2.25rem;
-    padding: var(--space-1) var(--space-3);
-    border: 1px solid var(--line);
-    border-left: 4px solid var(--c);
-    border-radius: var(--radius-sm);
-    background: var(--bg);
+    display: block;
+    width: 100%;
+    min-height: 2.5rem;
+    padding: var(--space-2) var(--space-3) var(--space-2) calc(var(--space-3) + 4px);
+    border: 0;
+    border-radius: var(--radius);
+    box-shadow: inset 4px 0 0 var(--c);
+    background: none;
     color: var(--ink);
     font: inherit;
     font-size: var(--step--1);
+    font-weight: 600;
+    line-height: 1.3;
     text-align: left;
     cursor: pointer;
   }
 
   .detail :global(.rel-track) {
+    display: block;
+    font-weight: 400;
     color: var(--ink-muted);
-    font-size: 0.8em;
   }
 
   .detail :global(.none) {
     font-size: var(--step--1);
+    color: var(--ink-muted);
   }
 
   @media (hover: hover) and (pointer: fine) {
     .tab:hover,
-    .tl-small:hover,
     .detail :global(.rel button:hover) {
-      border-color: var(--ink-muted);
+      background: var(--bg-raised);
     }
 
-    .mini-card:hover {
-      border-color: var(--c);
+    .detail :global(.rel button:hover) {
+      background: var(--bg);
+    }
+
+    .tl-small:hover {
+      background: var(--bg-raised);
+    }
+
+    .mini-head:hover .mini-name {
+      text-decoration-thickness: 5px;
     }
   }
 
   @media (prefers-reduced-motion: no-preference) {
     .tab,
     .tl-small,
-    .mini-card {
-      transition: border-color var(--duration-fast) var(--ease-out), background-color var(--duration-fast) var(--ease-out);
+    .detail :global(.rel button) {
+      transition: background-color var(--duration-fast) var(--ease-out);
+    }
+  }
+
+  /* ---------- Narrower screens ---------- */
+  @media (max-width: 75rem) {
+    .skill-tree {
+      grid-template-columns: minmax(0, 1fr) 19rem;
+      grid-template-areas:
+        'index index'
+        'stage detail'
+        'time detail'
+        'key detail';
+      grid-template-rows: auto auto auto 1fr;
+    }
+
+    .index {
+      position: static;
+      grid-template-columns: repeat(auto-fill, minmax(11rem, 1fr));
     }
   }
 
   @media (max-width: 60rem) {
-    .sheet {
-      grid-template-columns: 1fr;
-    }
-
-    .layout {
-      grid-template-columns: 1fr;
+    .skill-tree {
+      grid-template-columns: minmax(0, 1fr);
+      grid-template-areas: 'index' 'stage' 'time' 'detail' 'key';
+      grid-template-rows: auto;
     }
 
     .detail {
       position: static;
+      max-height: none;
+      overflow: visible;
     }
   }
 
-  /* On small screens the tree keeps a readable size and scrolls sideways. */
+  /* On phones the tree keeps a readable size and scrolls sideways inside the frame. */
   @media (max-width: 40rem) {
-    .panel.track {
+    .index {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .tab-sub {
+      display: none;
+    }
+
+    .sketches {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: var(--space-6) var(--space-4);
+    }
+
+    .stage {
+      min-height: 0;
+      padding: var(--space-4);
+      background-attachment: local;
+    }
+
+    .board-scroll {
       overflow-x: auto;
       margin-inline: calc(-1 * var(--space-4));
       padding-inline: var(--space-4);
     }
 
-    .panel.track :global(.board) {
+    .board-scroll :global(.board) {
       min-width: 34rem;
+    }
+
+    .ticks span.minor {
+      display: none;
     }
   }
 
   @media (max-width: 30rem) {
-    .stage,
-    .timeline {
-      padding-inline: var(--space-4);
-    }
-
     .lane {
-      grid-template-columns: 2.75rem 1fr;
+      grid-template-columns: 3rem 1fr;
     }
   }
 </style>

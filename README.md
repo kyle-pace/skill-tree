@@ -4,7 +4,7 @@ Kyle Pace's career drawn as an RPG skill tree: a decade-plus of restaurants, a U
 
 Live at **[kylepace.dev/skill-tree](https://kylepace.dev/skill-tree/)**, one of the experiments on [kylepace.dev](https://kylepace.dev).
 
-Built with [Astro](https://astro.build) on Cloudflare Workers, using [kp-design](https://github.com/kyle-pace/kp-design) for the shared look, and following [kyle-pace/principles](https://github.com/kyle-pace/principles).
+Built with [Astro](https://astro.build) on Cloudflare Workers, using [kp-design](https://github.com/kyle-pace/kp-design)'s `LabLayout` as a minimal shell (back link, footer, display settings, analytics) and its own character-sheet look, and following [kyle-pace/principles](https://github.com/kyle-pace/principles).
 
 ## Run it
 
@@ -21,8 +21,10 @@ npm run preview   # builds, then runs it the way Cloudflare will
 | --- | --- |
 | Tracks, skills, eras, attributes | `src/data/skill-tree.ts` |
 | The tree and its interactions | `src/components/SkillTree.astro`, `SkillBoard.astro` |
-| The page | `src/pages/skill-tree/index.astro` |
-| Page shell (header, footer, analytics) | `DevLayout` from kp-design |
+| The page: title, character sheet, About | `src/pages/skill-tree/index.astro` |
+| The look (token overrides) | `src/styles/theme.css` |
+| Design plan: concept, palette, layout | `design/PLAN.md` |
+| Page shell (back link, footer, display settings, analytics) | `LabLayout` from kp-design |
 | Which "Read" links are live | `src/data/links.json`, written by `scripts/links.mjs` |
 | Share card | `design/og.html`, rendered to `public/skill-tree/og.png` |
 

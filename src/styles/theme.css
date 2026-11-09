@@ -1,0 +1,31 @@
+/*
+  The skill tree's own look. It's a standalone lab (kp-design's LabLayout), so it takes
+  kp-design's tokens and makes them its own: a character sheet on graph paper in light
+  mode, a blueprint in dark mode. The plan behind these values is design/PLAN.md.
+  Every text pair meets WCAG AA (4.5:1) in light and dark; --rule meets 3:1 for borders.
+*/
+:root {
+  --bg: light-dark(#eef2f5, #0f2135); /* Paper */
+  --bg-raised: light-dark(#f9fbfc, #152c45); /* Card stock */
+  --ink: light-dark(#15233a, #e6edf5); /* Form ink */
+  --ink-muted: light-dark(#4b5a6e, #a3b4c8); /* Pencil */
+  --line: light-dark(#c9d4de, #27425f); /* Graph paper grid, decorative only */
+  --rule: light-dark(#7b8ba0, #6d87a6); /* Borders people need to see */
+  --accent: light-dark(#2445c8, #9db2ff); /* Ballpoint */
+  --accent-ink: light-dark(#2445c8, #9db2ff);
+  --radius: 3px;
+  --radius-sm: 3px;
+  /* One graph-paper square. The tree's tiers line up with it on wide screens. */
+  --grid: 1.5rem;
+}
+
+/* More contrast (display settings or the device): the borders go full ink too. */
+:root[data-contrast='more'] {
+  --rule: var(--ink);
+}
+
+@media (prefers-contrast: more) {
+  :root:not([data-contrast='default']) {
+    --rule: var(--ink);
+  }
+}

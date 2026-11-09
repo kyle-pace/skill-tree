@@ -97,6 +97,7 @@ const levelName = { sig: 'signature strength', pro: 'proficient', dev: 'still de
           k === 'skill' ? levelName[lv!] : k,
           n.status === 'active' ? 'in progress' : '',
           n.status === 'locked' ? 'locked' : '',
+          n.cross?.length ? `also builds on ${n.cross.map((cid) => `${byId[cid].name} (${trackOf(byId[cid]).name})`).join(' and ')}` : '',
         ]
           .filter(Boolean)
           .join(', ');
@@ -107,39 +108,52 @@ const levelName = { sig: 'signature strength', pro: 'proficient', dev: 'still de
             transform={`translate(${x} ${y})`}
             data-id={n.id}
             data-t={n.status === 'locked' ? 2027 : (n.t ?? 2027)}
-            tabindex={mini ? undefined : '0'}
-            role={mini ? undefined : 'button'}
-            aria-label={mini ? undefined : label}
           >
-            {n.status === 'active' && <circle class="ring" r={s + 7} />}
-            {k === 'capstone' && <circle class="halo" r={s + 7} />}
-            {k === 'milestone' || k === 'secret' ? (
-              <rect class="shape" x={-s} y={-s} width={s * 2} height={s * 2} rx="11" />
-            ) : (
-              <circle class="shape" r={s} />
-            )}
-            {lv === 'dev' && (
-              <circle
-                class="arc"
-                r={s}
-                stroke-dasharray={`${(circumference * 0.33).toFixed(1)} ${circumference.toFixed(1)}`}
-                transform="rotate(-90)"
-              />
-            )}
-            <text class="glyph" font-size={n.glyph.length > 3 ? 10 : n.glyph.length > 2 ? 12 : 14}>
+            {/* The focusable part holds the shape and the visible name, so the name people
+                see is the name a screen reader hears (WCAG 2.5.3). The glyph and the
+                cross-track dots sit outside it; their meaning is in aria-label. */}
+            <g class="hit" tabindex={mini ? undefined : '0'} role={mini ? undefined : 'button'} aria-label={mini ? undefined : label}>
+              {!mini && <circle class="focus-ring" r={s + 12} />}
+              {n.status === 'active' && <circle class="ring" r={s + 7} />}
+              {k === 'capstone' && <circle class="halo" r={s + 7} />}
+              {k === 'milestone' || k === 'secret' ? (
+                <rect class="shape" x={-s} y={-s} width={s * 2} height={s * 2} rx="6" />
+              ) : (
+                <circle class="shape" r={s} />
+              )}
+              {lv === 'dev' && (
+                <circle
+                  class="arc"
+                  r={s}
+                  stroke-dasharray={`${(circumference * 0.33).toFixed(1)} ${circumference.toFixed(1)}`}
+                  transform="rotate(-90)"
+                />
+              )}
+              {lv === 'sig' && (
+                <g class="star" transform={`translate(${(s * 0.75).toFixed(1)} ${(-s * 0.75).toFixed(1)})`}>
+                  <circle r="9.5" />
+                  <polygon points={star(6.5)} />
+                </g>
+              )}
+              {!mini && (
+                <text class="label" y={s + 20}>
+                  {lines(n.name).map((line, i, all) => (
+                    <tspan x="0" dy={i ? 16 : 0}>
+                      {i < all.length - 1 ? `${line} ` : line}
+                    </tspan>
+                  ))}
+                </text>
+              )}
+            </g>
+            <text class="glyph" aria-hidden="true" font-size={n.glyph.length > 3 ? 10 : n.glyph.length > 2 ? 12 : 14}>
               {n.glyph}
             </text>
-            {lv === 'sig' && (
-              <g class="star" transform={`translate(${(s * 0.75).toFixed(1)} ${(-s * 0.75).toFixed(1)})`}>
-                <circle r="9.5" />
-                <polygon points={star(6.5)} />
-              </g>
-            )}
             {(n.cross ?? []).map((cid, i) => {
               const other = trackOf(byId[cid]);
               return (
                 <circle
                   class="portal"
+                  aria-hidden="true"
                   r="6"
                   cx={(-s * 0.78 - i * 11).toFixed(1)}
                   cy={(-s * 0.78).toFixed(1)}
@@ -149,15 +163,6 @@ const levelName = { sig: 'signature strength', pro: 'proficient', dev: 'still de
                 </circle>
               );
             })}
-            {!mini && (
-              <text class="label" y={s + 20}>
-                {lines(n.name).map((line, i) => (
-                  <tspan x="0" dy={i ? 16 : 0}>
-                    {line}
-                  </tspan>
-                ))}
-              </text>
-            )}
           </g>
         );
       })
@@ -178,22 +183,25 @@ const levelName = { sig: 'signature strength', pro: 'proficient', dev: 'still de
     margin-inline: auto;
   }
 
+  /* Tier rules, numbered in the margin like rows on a form. */
   .tier line {
-    stroke: var(--line);
+    stroke: var(--rule);
+    stroke-opacity: 0.6;
     stroke-dasharray: 2 6;
   }
 
   .tier text {
-    font-family: var(--font-mono);
-    font-size: 12px;
+    font-family: var(--font-text);
+    font-size: 13px;
+    font-weight: 700;
     fill: var(--ink-muted);
   }
 
   .edge {
     fill: none;
-    stroke: var(--c);
+    stroke: var(--c-ink);
     stroke-width: 2.5;
-    stroke-opacity: 0.4;
+    stroke-opacity: 0.45;
     stroke-linecap: round;
   }
 
@@ -204,29 +212,33 @@ const levelName = { sig: 'signature strength', pro: 'proficient', dev: 'still de
 
   .node {
     cursor: pointer;
+  }
+
+  .hit {
     outline: none;
   }
 
+  /* Strokes use the text-safe shade so every shape is at least 3:1 against the paper. */
   .shape {
-    fill: color-mix(in oklab, var(--c), var(--bg-raised) 86%);
-    stroke: var(--c);
+    fill: color-mix(in oklab, var(--c), var(--bg) 84%);
+    stroke: var(--c-ink);
     stroke-width: 2.5;
   }
 
   .milestone .shape,
   .secret .shape {
-    fill: color-mix(in oklab, var(--c), var(--bg-raised) 72%);
+    fill: color-mix(in oklab, var(--c), var(--bg) 70%);
   }
 
   .capstone .shape {
-    fill: color-mix(in oklab, var(--c), var(--bg-raised) 62%);
+    fill: color-mix(in oklab, var(--c), var(--bg) 58%);
     stroke-width: 3;
   }
 
   .halo {
     fill: none;
-    stroke: var(--c);
-    stroke-opacity: 0.35;
+    stroke: var(--c-ink);
+    stroke-opacity: 0.5;
     stroke-width: 2;
   }
 
@@ -235,21 +247,21 @@ const levelName = { sig: 'signature strength', pro: 'proficient', dev: 'still de
   }
 
   .lv-dev .shape {
-    fill: var(--bg-raised);
-    stroke-opacity: 0.45;
+    fill: var(--bg);
+    stroke-opacity: 0.55;
     stroke-dasharray: 3 4;
   }
 
   .arc {
     fill: none;
-    stroke: var(--c);
+    stroke: var(--c-ink);
     stroke-width: 3.5;
     stroke-linecap: round;
   }
 
   .ring {
     fill: none;
-    stroke: var(--c);
+    stroke: var(--c-ink);
     stroke-width: 2;
     stroke-dasharray: 4 5;
   }
@@ -262,7 +274,8 @@ const levelName = { sig: 'signature strength', pro: 'proficient', dev: 'still de
   }
 
   .glyph {
-    font-family: var(--font-mono);
+    font-family: var(--font-text);
+    font-weight: 700;
     text-anchor: middle;
     dominant-baseline: central;
     fill: var(--c-ink);
@@ -279,7 +292,7 @@ const levelName = { sig: 'signature strength', pro: 'proficient', dev: 'still de
   }
 
   .star circle {
-    fill: var(--bg-raised);
+    fill: var(--bg);
   }
 
   .star polygon {
@@ -290,7 +303,7 @@ const levelName = { sig: 'signature strength', pro: 'proficient', dev: 'still de
   }
 
   .portal {
-    stroke: var(--bg-raised);
+    stroke: var(--bg);
     stroke-width: 2.5;
   }
 
@@ -301,19 +314,30 @@ const levelName = { sig: 'signature strength', pro: 'proficient', dev: 'still de
     fill: var(--ink);
     text-anchor: middle;
     paint-order: stroke;
-    stroke: var(--bg-raised);
-    stroke-width: 5px;
+    stroke: var(--bg);
+    stroke-width: 6px;
     stroke-linejoin: round;
     pointer-events: none;
   }
 
   .node:hover .shape,
-  .node:focus-visible .shape {
+  .hit:focus-visible .shape {
     stroke-width: 4;
     stroke-opacity: 1;
   }
 
-  .node:focus-visible .label {
+  .focus-ring {
+    fill: none;
+    stroke: var(--accent-ink);
+    stroke-width: 3;
+    display: none;
+  }
+
+  .hit:focus-visible .focus-ring {
+    display: inline;
+  }
+
+  .hit:focus-visible .label {
     text-decoration: underline;
   }
 

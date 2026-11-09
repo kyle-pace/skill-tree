@@ -2,66 +2,291 @@
 // The career skill tree. Content: src/data/skill-tree.ts. Drawing: src/components/.
 // "Read" links come from src/data/links.json (scripts/links.mjs): only posts and case
 // studies that are live on kylepace.net get one.
-import DevLayout from 'kp-design/layouts/DevLayout.astro';
-import { StatusBadge } from 'kp-design';
+// It's a standalone lab, not a page of kylepace.dev: LabLayout gives it only a back link,
+// a footer line, display settings and analytics. Its look is src/styles/theme.css, and
+// the plan behind it is design/PLAN.md.
+import LabLayout from 'kp-design/layouts/LabLayout.astro';
 import SkillTree from '../../components/SkillTree.astro';
-import { nodes } from '../../data/skill-tree';
+import { nodes, stats } from '../../data/skill-tree';
 import liveLinks from '../../data/links.json';
+import '../../styles/theme.css';
 
 const live = liveLinks as Record<string, { href: string; title: string }>;
 const links = Object.fromEntries(nodes.filter((n) => n.read && live[n.read]).map((n) => [n.id, live[n.read!]]));
+
+const colorVar = (color: string) => (color === 'neutral' ? 'var(--ink-muted)' : `var(--${color}-ink)`);
 ---
 
-<DevLayout
+<LabLayout
   title="Career skill tree"
   description="Kyle Pace’s career as an RPG skill tree: restaurants, a UX bootcamp, product, app stores, an MBA and a spin-off. Pick a track or replay it year by year."
-  accent="violet"
   image="/skill-tree/og.png"
-  imageAlt="My career, as a skill tree: Kyle Pace’s career drawn as an RPG skill tree on kylepace.dev."
+  imageAlt="My career, as a skill tree: one track of Kyle Pace’s career drawn as an RPG skill tree on blueprint graph paper."
+  themeColor={{ light: '#eef2f5', dark: '#0f2135' }}
 >
-  <header class="intro">
-    <p class="eyebrow"><a href="https://kylepace.dev/labs/">Labs</a> <StatusBadge status="in-progress" /></p>
-    <h1>My career, as a skill tree.</h1>
-    <p class="lede prose">
-      A resume is a list. Careers feel more like a game: you pick up skills in odd places, and they combine in ways
-      you don’t expect. Thirteen years in restaurants turned out to be great training for stakeholder management.
-    </p>
-  </header>
+  <a slot="bar" class="about-link" href="#about">About</a>
+
+  <h1 class="title">My career, as a skill tree</h1>
 
   <SkillTree links={links} />
 
-  <p class="fine-print prose muted">
-    The levels are my own honest read, not a test score. The attributes are not. Built with AI coding agents, and
-    still being refined. <a href="https://kylepace.dev/labs/">More labs</a>
-  </p>
-</DevLayout>
+  <section class="sheet" aria-labelledby="sheet-title">
+    <h2 id="sheet-title" class="visually-hidden">Character sheet</h2>
+    <dl class="fields">
+      <div class="field name"><dt>Character</dt><dd>Kyle Pace</dd></div>
+      <div class="field"><dt>Class</dt><dd>Director of Product</dd></div>
+      <div class="field short"><dt>Level</dt><dd>6</dd></div>
+      <div class="field"><dt>Background</dt><dd>The restaurant floor</dd></div>
+    </dl>
+
+    <div class="scores">
+      <h3>Attributes <span class="out-of">out of 20</span></h3>
+      <dl>
+        {
+          stats.map((s) => (
+            <div class="score" style={`--c: ${colorVar(s.color)}`}>
+              <dt>{s.key}</dt>
+              <dd class="value">{s.value}</dd>
+              <dd class="pips" aria-hidden="true">
+                {Array.from({ length: 20 }, (_, i) => (
+                  <span class:list={{ on: i < s.value }} />
+                ))}
+              </dd>
+              <dd class="why">{s.why}</dd>
+            </div>
+          ))
+        }
+      </dl>
+    </div>
+  </section>
+
+  <section class="about" id="about" aria-labelledby="about-title">
+    <h2 id="about-title">About</h2>
+    <p>
+      A resume is a list. Careers feel more like a game: you pick up skills in odd places, and they combine in ways
+      you don’t expect. Thirteen years in restaurants turned out to be great training for stakeholder management. So
+      this is my career drawn as a skill tree.
+    </p>
+    <h3>How to read it</h3>
+    <p>
+      Each track is one line of work. Skills near the top came first, and the lines show what each one built on. A
+      star marks a signature strength, a dashed ring is a skill I’m still developing, squares are milestones like a
+      new role or a degree, and the larger circle at the bottom of a track is its capstone. A small colored dot means
+      a skill also builds on another track. Pick any skill to read where it came from, or press Replay my career to
+      watch the tree fill in year by year.
+    </p>
+    <h3>Notes</h3>
+    <p>
+      The levels are my own honest read, not a test score. The attributes are not. The timeline isn’t to scale, and
+      the whole thing is still being refined.
+    </p>
+  </section>
+</LabLayout>
 
 <style>
-  .intro {
-    padding-bottom: var(--space-8);
+  .title,
+  .sheet,
+  .about {
+    width: min(100% - 2 * var(--gutter), 84rem);
+    margin-inline: auto;
   }
 
-  .intro h1 {
-    max-width: 18ch;
-  }
-
-  .eyebrow {
-    display: flex;
-    gap: var(--space-2);
+  .about-link {
+    display: inline-flex;
     align-items: center;
+    min-height: 2.75rem;
+    padding-inline: var(--space-2);
+    margin-inline-end: calc(-1 * var(--space-2));
+    border-radius: var(--radius-sm);
+    color: var(--ink-muted);
+    font-size: var(--step--1);
+    text-decoration: none;
   }
 
-  .eyebrow a {
-    color: inherit;
+  .about-link:hover {
+    color: var(--ink);
+    text-decoration: underline;
   }
 
-  .lede {
+  /* The form's printed title: one line, then straight into the tree. */
+  .title {
+    margin-block: var(--space-2) var(--space-6);
+    font-size: var(--step-3);
+    font-weight: 700;
+    line-height: 1.05;
+    letter-spacing: -0.02em;
+  }
+
+  /* ---------- Character sheet: ruled fields and the attribute column ---------- */
+  .sheet {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: var(--space-8) var(--space-12);
+    align-items: start;
+    margin-top: var(--space-12);
+    padding-top: var(--space-8);
+    border-top: 2px solid var(--ink);
+  }
+
+  /* Ruled blanks with the label printed under the line, like a printed form. */
+  .fields {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-4) var(--space-6);
+    margin: 0;
+  }
+
+  .field {
+    display: flex;
+    flex-direction: column-reverse;
+    flex: 1 1 10rem;
+  }
+
+  .field.name {
+    flex-basis: 100%;
+  }
+
+  .field.short {
+    flex: 0 0 4rem;
+  }
+
+  .field dd {
+    margin: 0;
+    padding-bottom: var(--space-1);
+    border-bottom: 2px solid var(--ink);
     font-size: var(--step-1);
+    font-weight: 700;
+    line-height: 1.25;
+  }
+
+  .field.name dd {
+    font-size: var(--step-2);
+  }
+
+  .field dt {
+    padding-top: var(--space-1);
+    font-size: var(--step--1);
     color: var(--ink-muted);
   }
 
-  .fine-print {
-    margin-top: var(--space-8);
+  .scores h3 {
+    margin: 0 0 var(--space-2);
     font-size: var(--step--1);
+    font-weight: 700;
+  }
+
+  .scores dl {
+    margin: 0;
+    border-top: 2px solid var(--ink);
+  }
+
+  .out-of {
+    font-weight: 400;
+    color: var(--ink-muted);
+  }
+
+  /* Ability scores: a ruled column, one pip per point. */
+  .score {
+    display: grid;
+    grid-template-columns: 3.5rem 2.25rem minmax(0, 1fr);
+    grid-template-areas:
+      'key value pips'
+      'key value why';
+    align-items: center;
+    column-gap: var(--space-3);
+    padding-block: var(--space-2);
+    border-bottom: 1px solid var(--rule);
+  }
+
+  .score dt {
+    grid-area: key;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+  }
+
+  .score dd {
+    margin: 0;
+  }
+
+  .value {
+    grid-area: value;
+    font-size: var(--step-2);
+    font-weight: 700;
+    line-height: 1;
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .pips {
+    grid-area: pips;
+    display: grid;
+    grid-template-columns: repeat(20, 1fr);
+    gap: 2px;
+    max-width: 18rem;
+  }
+
+  .pips span {
+    height: 0.6rem;
+    border: 1px solid var(--rule);
+    border-radius: 1px;
+  }
+
+  .pips span.on {
+    background: var(--c);
+    border-color: var(--c);
+  }
+
+  .why {
+    grid-area: why;
+    font-size: var(--step--1);
+    color: var(--ink-muted);
+    line-height: 1.35;
+  }
+
+  /* ---------- About ---------- */
+  .about {
+    margin-top: var(--space-12);
+    padding-top: var(--space-8);
+    border-top: 2px solid var(--ink);
+    scroll-margin-top: var(--space-4);
+  }
+
+  .about > * {
+    max-width: 40rem;
+  }
+
+  .about h2 {
+    margin: 0 0 var(--space-3);
+    font-size: var(--step-2);
+    font-weight: 700;
+  }
+
+  .about h3 {
+    margin: var(--space-6) 0 var(--space-1);
+    font-size: var(--step-0);
+    font-weight: 700;
+  }
+
+  .about p {
+    margin: 0;
+  }
+
+  @media (max-width: 60rem) {
+    .sheet {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+
+  @media (max-width: 40rem) {
+    .title {
+      font-size: var(--step-2);
+      margin-bottom: var(--space-4);
+    }
+  }
+
+  @media (max-width: 30rem) {
+    .score {
+      grid-template-columns: 3.25rem 2rem minmax(0, 1fr);
+    }
   }
 </style>

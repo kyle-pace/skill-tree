@@ -1,31 +1,69 @@
 <!doctype html><html><head><meta charset="utf-8"><style>
 /* Share card for kylepace.dev/skill-tree/ (public/skill-tree/og.png). Render at 1200x630
-   (share-card skill). Colors are kp-design's dark-theme tokens and track accents. */
+   (share-card skill). Colors are the page's dark tokens (src/styles/theme.css): the
+   blueprint paper, form ink, pencil and the App Release Manager track's lime. */
 @font-face{font-family:A;src:url("../node_modules/@fontsource/atkinson-hyperlegible-next/files/atkinson-hyperlegible-next-latin-400-normal.woff2")}
 @font-face{font-family:A;font-weight:700;src:url("../node_modules/@fontsource/atkinson-hyperlegible-next/files/atkinson-hyperlegible-next-latin-700-normal.woff2")}
-@font-face{font-family:M;src:url("../node_modules/@fontsource/atkinson-hyperlegible-mono/files/atkinson-hyperlegible-mono-latin-400-normal.woff2")}
 html,body{margin:0}
-body{width:1200px;height:630px;background:#141317;font-family:A;overflow:hidden;position:relative;color:#f3efe8}
-.glow{position:absolute;inset:-220px auto auto -160px;width:900px;height:620px;background:radial-gradient(ellipse at center,rgba(139,92,246,.26),transparent 65%)}
-.card{position:relative;box-sizing:border-box;width:1200px;height:630px;padding:76px 0 72px 80px;display:grid;grid-template-columns:540px 1fr;gap:20px}
+body{width:1200px;height:630px;background:#0f2135;font-family:A;overflow:hidden;color:#e6edf5}
+.card{box-sizing:border-box;width:1200px;height:630px;padding:64px 64px 64px 72px;display:grid;grid-template-columns:1fr 500px;gap:56px}
 .text{display:flex;flex-direction:column;justify-content:space-between}
-.mark{font-family:M;font-size:34px}.mark b{font-weight:400;color:#b9a0ff}
-h1{margin:0;font-size:84px;line-height:1.02;letter-spacing:-0.02em;font-weight:700}
-.sub{margin:22px 0 0;font-size:31px;line-height:1.35;color:#aaa5b2}
-.path{font-family:M;font-size:28px;color:#aaa5b2}
-.tree{position:relative;margin-top:-20px}
-.tree svg{position:absolute;left:-24px;top:0;-webkit-mask-image:linear-gradient(to bottom,#000 70%,transparent);mask-image:linear-gradient(to bottom,#000 70%,transparent)}
+.site{font-size:28px;color:#a3b4c8}
+h1{margin:0;font-size:76px;line-height:1.02;letter-spacing:-0.02em;font-weight:700}
+.sub{margin:26px 0 0;font-size:30px;line-height:1.35;color:#a3b4c8}
+.field{font-size:30px;font-weight:700;border-bottom:3px solid #e6edf5;padding-bottom:6px;width:fit-content;min-width:300px}
+.field-label{margin-top:8px;font-size:22px;color:#a3b4c8}
+.frame{border:3px solid #e6edf5;border-radius:3px;overflow:hidden;
+  background-color:#0f2135;
+  background-image:linear-gradient(#36506d 1px,transparent 1px),linear-gradient(90deg,#36506d 1px,transparent 1px),linear-gradient(#27425f 1px,transparent 1px),linear-gradient(90deg,#27425f 1px,transparent 1px);
+  background-size:96px 96px,96px 96px,24px 24px,24px 24px;background-position:-1px -1px}
+svg{display:block}
+.tier{font-family:A;font-weight:700;font-size:15px;fill:#a3b4c8}
+.glyph{font-family:A;font-weight:700;text-anchor:middle;dominant-baseline:central}
 </style></head><body>
-<div class="glow"></div>
 <div class="card">
   <div class="text">
-    <div class="mark">kylepace<b>.dev</b></div>
+    <div class="site">kylepace.dev/skill-tree</div>
     <div>
-      <h1>My career, as a skill tree.</h1>
-      <p class="sub">Restaurants, a UX bootcamp, product, app stores, an MBA and a spin-off.</p>
+      <h1>My career, as a skill tree</h1>
+      <p class="sub">Kyle Pace’s career drawn as an RPG skill tree. Pick a track, or replay it year by year.</p>
     </div>
-    <div class="path">/skill-tree</div>
+    <div class="site">Restaurants to Director of Product</div>
   </div>
-  <div class="tree"><svg width="560" height="600" viewBox="0 0 560 600"><line x1="70" y1="60" x2="70" y2="140" stroke="#ff7a1a" stroke-opacity=".45" stroke-width="4"/><line x1="70" y1="140" x2="70" y2="220" stroke="#ff7a1a" stroke-opacity=".45" stroke-width="4"/><line x1="70" y1="220" x2="70" y2="300" stroke="#ff7a1a" stroke-opacity=".45" stroke-width="4"/><line x1="70" y1="300" x2="70" y2="380" stroke="#ff7a1a" stroke-opacity=".45" stroke-width="4"/><circle cx="70" cy="60" r="15" fill="#1e1c22" stroke="#ff7a1a" stroke-width="3.5"/><circle cx="70" cy="60" r="4.5" fill="#ff7a1a"/><circle cx="70" cy="140" r="15" fill="#1e1c22" stroke="#ff7a1a" stroke-width="3.5"/><circle cx="70" cy="140" r="4.5" fill="#ff7a1a"/><circle cx="70" cy="220" r="15" fill="#1e1c22" stroke="#ff7a1a" stroke-width="3.5"/><circle cx="70" cy="220" r="4.5" fill="#ff7a1a"/><circle cx="70" cy="300" r="15" fill="#1e1c22" stroke="#ff7a1a" stroke-width="3.5"/><circle cx="70" cy="300" r="4.5" fill="#ff7a1a"/><circle cx="70" cy="380" r="22" fill="#1e1c22" stroke="#ff7a1a" stroke-width="5"/><circle cx="70" cy="380" r="6" fill="#ff7a1a"/><line x1="142" y1="60" x2="142" y2="140" stroke="#38bdf8" stroke-opacity=".45" stroke-width="4"/><line x1="142" y1="140" x2="142" y2="220" stroke="#38bdf8" stroke-opacity=".45" stroke-width="4"/><line x1="142" y1="220" x2="142" y2="300" stroke="#38bdf8" stroke-opacity=".45" stroke-width="4"/><circle cx="142" cy="60" r="15" fill="#1e1c22" stroke="#38bdf8" stroke-width="3.5"/><circle cx="142" cy="60" r="4.5" fill="#38bdf8"/><circle cx="142" cy="140" r="15" fill="#1e1c22" stroke="#38bdf8" stroke-width="3.5"/><circle cx="142" cy="140" r="4.5" fill="#38bdf8"/><circle cx="142" cy="220" r="15" fill="#1e1c22" stroke="#38bdf8" stroke-width="3.5"/><circle cx="142" cy="220" r="4.5" fill="#38bdf8"/><circle cx="142" cy="300" r="22" fill="#1e1c22" stroke="#38bdf8" stroke-width="5"/><circle cx="142" cy="300" r="6" fill="#38bdf8"/><line x1="214" y1="60" x2="214" y2="140" stroke="#ff3e8a" stroke-opacity=".45" stroke-width="4"/><line x1="214" y1="140" x2="214" y2="220" stroke="#ff3e8a" stroke-opacity=".45" stroke-width="4"/><line x1="214" y1="220" x2="214" y2="300" stroke="#ff3e8a" stroke-opacity=".45" stroke-width="4"/><line x1="214" y1="300" x2="214" y2="380" stroke="#ff3e8a" stroke-opacity=".45" stroke-width="4"/><circle cx="214" cy="60" r="15" fill="#1e1c22" stroke="#ff3e8a" stroke-width="3.5"/><circle cx="214" cy="60" r="4.5" fill="#ff3e8a"/><circle cx="214" cy="140" r="15" fill="#1e1c22" stroke="#ff3e8a" stroke-width="3.5"/><circle cx="214" cy="140" r="4.5" fill="#ff3e8a"/><circle cx="214" cy="220" r="15" fill="#1e1c22" stroke="#ff3e8a" stroke-width="3.5"/><circle cx="214" cy="220" r="4.5" fill="#ff3e8a"/><circle cx="214" cy="300" r="15" fill="#1e1c22" stroke="#ff3e8a" stroke-width="3.5"/><circle cx="214" cy="300" r="4.5" fill="#ff3e8a"/><circle cx="214" cy="380" r="22" fill="#1e1c22" stroke="#ff3e8a" stroke-width="5"/><circle cx="214" cy="380" r="6" fill="#ff3e8a"/><line x1="286" y1="60" x2="286" y2="140" stroke="#a3e635" stroke-opacity=".45" stroke-width="4"/><line x1="286" y1="140" x2="286" y2="220" stroke="#a3e635" stroke-opacity=".45" stroke-width="4"/><line x1="286" y1="220" x2="286" y2="300" stroke="#a3e635" stroke-opacity=".45" stroke-width="4"/><line x1="286" y1="300" x2="286" y2="380" stroke="#a3e635" stroke-opacity=".45" stroke-width="4"/><line x1="286" y1="380" x2="286" y2="460" stroke="#a3e635" stroke-opacity=".45" stroke-width="4"/><circle cx="286" cy="60" r="15" fill="#1e1c22" stroke="#a3e635" stroke-width="3.5"/><circle cx="286" cy="60" r="4.5" fill="#a3e635"/><circle cx="286" cy="140" r="15" fill="#1e1c22" stroke="#a3e635" stroke-width="3.5"/><circle cx="286" cy="140" r="4.5" fill="#a3e635"/><circle cx="286" cy="220" r="15" fill="#1e1c22" stroke="#a3e635" stroke-width="3.5"/><circle cx="286" cy="220" r="4.5" fill="#a3e635"/><circle cx="286" cy="300" r="15" fill="#1e1c22" stroke="#a3e635" stroke-width="3.5"/><circle cx="286" cy="300" r="4.5" fill="#a3e635"/><circle cx="286" cy="380" r="15" fill="#1e1c22" stroke="#a3e635" stroke-width="3.5"/><circle cx="286" cy="380" r="4.5" fill="#a3e635"/><circle cx="286" cy="460" r="22" fill="#1e1c22" stroke="#a3e635" stroke-width="5"/><circle cx="286" cy="460" r="6" fill="#a3e635"/><line x1="358" y1="60" x2="358" y2="140" stroke="#8b5cf6" stroke-opacity=".45" stroke-width="4"/><line x1="358" y1="140" x2="358" y2="220" stroke="#8b5cf6" stroke-opacity=".45" stroke-width="4"/><line x1="358" y1="220" x2="358" y2="300" stroke="#8b5cf6" stroke-opacity=".45" stroke-width="4"/><circle cx="358" cy="60" r="15" fill="#1e1c22" stroke="#8b5cf6" stroke-width="3.5"/><circle cx="358" cy="60" r="4.5" fill="#8b5cf6"/><circle cx="358" cy="140" r="15" fill="#1e1c22" stroke="#8b5cf6" stroke-width="3.5"/><circle cx="358" cy="140" r="4.5" fill="#8b5cf6"/><circle cx="358" cy="220" r="15" fill="#1e1c22" stroke="#8b5cf6" stroke-width="3.5"/><circle cx="358" cy="220" r="4.5" fill="#8b5cf6"/><circle cx="358" cy="300" r="22" fill="#1e1c22" stroke="#8b5cf6" stroke-width="5"/><circle cx="358" cy="300" r="6" fill="#8b5cf6"/><line x1="430" y1="60" x2="430" y2="140" stroke="#facc15" stroke-opacity=".45" stroke-width="4"/><line x1="430" y1="140" x2="430" y2="220" stroke="#facc15" stroke-opacity=".45" stroke-width="4"/><line x1="430" y1="220" x2="430" y2="300" stroke="#facc15" stroke-opacity=".45" stroke-width="4"/><circle cx="430" cy="60" r="15" fill="#1e1c22" stroke="#facc15" stroke-width="3.5"/><circle cx="430" cy="60" r="4.5" fill="#facc15"/><circle cx="430" cy="140" r="15" fill="#1e1c22" stroke="#facc15" stroke-width="3.5"/><circle cx="430" cy="140" r="4.5" fill="#facc15"/><circle cx="430" cy="220" r="15" fill="#1e1c22" stroke="#facc15" stroke-width="3.5"/><circle cx="430" cy="220" r="4.5" fill="#facc15"/><circle cx="430" cy="300" r="22" fill="#1e1c22" stroke="#facc15" stroke-width="5"/><circle cx="430" cy="300" r="6" fill="#facc15"/><line x1="502" y1="60" x2="502" y2="140" stroke="#2dd4bf" stroke-opacity=".45" stroke-width="4"/><line x1="502" y1="140" x2="502" y2="220" stroke="#2dd4bf" stroke-opacity=".45" stroke-width="4"/><line x1="502" y1="220" x2="502" y2="300" stroke="#2dd4bf" stroke-opacity=".45" stroke-width="4"/><line x1="502" y1="300" x2="502" y2="380" stroke="#2dd4bf" stroke-opacity=".45" stroke-width="4"/><line x1="502" y1="380" x2="502" y2="460" stroke="#2dd4bf" stroke-opacity=".45" stroke-width="4"/><circle cx="502" cy="60" r="15" fill="#1e1c22" stroke="#2dd4bf" stroke-width="3.5"/><circle cx="502" cy="60" r="4.5" fill="#2dd4bf"/><circle cx="502" cy="140" r="15" fill="#1e1c22" stroke="#2dd4bf" stroke-width="3.5"/><circle cx="502" cy="140" r="4.5" fill="#2dd4bf"/><circle cx="502" cy="220" r="15" fill="#1e1c22" stroke="#2dd4bf" stroke-width="3.5"/><circle cx="502" cy="220" r="4.5" fill="#2dd4bf"/><circle cx="502" cy="300" r="15" fill="#1e1c22" stroke="#2dd4bf" stroke-width="3.5"/><circle cx="502" cy="300" r="4.5" fill="#2dd4bf"/><circle cx="502" cy="380" r="15" fill="#1e1c22" stroke="#2dd4bf" stroke-width="3.5"/><circle cx="502" cy="380" r="4.5" fill="#2dd4bf"/><circle cx="502" cy="460" r="22" fill="#1e1c22" stroke="#2dd4bf" stroke-width="5"/><circle cx="502" cy="460" r="6" fill="#2dd4bf"/><path d="M70 300 Q106 260 142 220" stroke="#aaa5b2" stroke-opacity=".35" stroke-width="3" fill="none" stroke-dasharray="4 7"/><path d="M358 380 Q394 340 430 300" stroke="#aaa5b2" stroke-opacity=".35" stroke-width="3" fill="none" stroke-dasharray="4 7"/></svg></div>
+  <div class="frame"><svg width="494" height="496" viewBox="0 8 470 500">
+<line x1="44" x2="440" y1="70" y2="70" stroke="#6d87a6" stroke-opacity=".6" stroke-dasharray="2 6" stroke-width="1.5"/>
+<text x="14" y="76" class="tier">I</text>
+<line x1="44" x2="440" y1="170" y2="170" stroke="#6d87a6" stroke-opacity=".6" stroke-dasharray="2 6" stroke-width="1.5"/>
+<text x="14" y="176" class="tier">II</text>
+<line x1="44" x2="440" y1="270" y2="270" stroke="#6d87a6" stroke-opacity=".6" stroke-dasharray="2 6" stroke-width="1.5"/>
+<text x="14" y="276" class="tier">III</text>
+<line x1="44" x2="440" y1="370" y2="370" stroke="#6d87a6" stroke-opacity=".6" stroke-dasharray="2 6" stroke-width="1.5"/>
+<text x="14" y="376" class="tier">IV</text>
+<line x1="44" x2="440" y1="470" y2="470" stroke="#6d87a6" stroke-opacity=".6" stroke-dasharray="2 6" stroke-width="1.5"/>
+<text x="14" y="476" class="tier">V</text>
+<path d="M230 98 C230 121.0 112 121.0 112 144" fill="none" stroke="#bef264" stroke-opacity="0.45" stroke-width="2.5" stroke-linecap="round"/>
+<path d="M230 98 C230 121.0 230 121.0 230 144" fill="none" stroke="#bef264" stroke-opacity="1" stroke-width="3.5" stroke-linecap="round"/>
+<path d="M230 98 C230 121.0 348 121.0 348 144" fill="none" stroke="#bef264" stroke-opacity="0.45" stroke-width="2.5" stroke-linecap="round"/>
+<path d="M112 196 C112 220.0 112 220.0 112 244" fill="none" stroke="#bef264" stroke-opacity="0.45" stroke-width="2.5" stroke-linecap="round"/>
+<path d="M230 196 C230 220.0 230 220.0 230 244" fill="none" stroke="#bef264" stroke-opacity="1" stroke-width="3.5" stroke-linecap="round"/>
+<path d="M348 196 C348 220.0 348 220.0 348 244" fill="none" stroke="#bef264" stroke-opacity="0.45" stroke-width="2.5" stroke-linecap="round"/>
+<path d="M112 296 C112 320.0 112 320.0 112 344" fill="none" stroke="#bef264" stroke-opacity="0.45" stroke-width="2.5" stroke-linecap="round"/>
+<path d="M230 296 C230 320.0 230 320.0 230 344" fill="none" stroke="#bef264" stroke-opacity="1" stroke-width="3.5" stroke-linecap="round"/>
+<path d="M348 296 C348 320.0 348 320.0 348 344" fill="none" stroke="#bef264" stroke-opacity="0.45" stroke-width="2.5" stroke-linecap="round"/>
+<path d="M112 396 C112 416.5 230 416.5 230 437" fill="none" stroke="#bef264" stroke-opacity="0.45" stroke-width="2.5" stroke-linecap="round"/>
+<path d="M230 396 C230 416.5 230 416.5 230 437" fill="none" stroke="#bef264" stroke-opacity="1" stroke-width="3.5" stroke-linecap="round"/>
+<path d="M348 396 C348 416.5 230 416.5 230 437" fill="none" stroke="#bef264" stroke-opacity="0.45" stroke-width="2.5" stroke-linecap="round"/>
+<g transform="translate(230 70)"><rect x="-24" y="-24" width="48" height="48" rx="6" fill="#33503a" stroke="#bef264" stroke-width="2.5"/><text class="glyph" fill="#bef264" font-size="13">KEY</text></g>
+<g transform="translate(112 170)"><circle r="22" fill="#274035" stroke="#bef264" stroke-width="2.5"/><text class="glyph" fill="#bef264" font-size="13">SIG</text></g>
+<g transform="translate(230 170)"><circle r="22" fill="#a3e635" stroke="#bef264" stroke-width="2.5"/><text class="glyph" fill="#1d2a0a" font-size="13">ASO</text><g transform="translate(16.5 -16.5)"><circle r="9.5" fill="#0f2135"/><polygon points="0.0,-6.5 1.7,-2.3 6.2,-2.0 2.8,0.9 3.8,5.3 0.0,2.9 -3.8,5.3 -2.8,0.9 -6.2,-2.0 -1.7,-2.3" fill="#facc15"/></g></g>
+<g transform="translate(348 170)"><circle r="22" fill="#274035" stroke="#bef264" stroke-width="2.5"/><text class="glyph" fill="#bef264" font-size="13">LBL</text></g>
+<g transform="translate(112 270)"><circle r="22" fill="#274035" stroke="#bef264" stroke-width="2.5"/><text class="glyph" fill="#bef264" font-size="13">RKU</text></g>
+<g transform="translate(230 270)"><circle r="22" fill="#274035" stroke="#bef264" stroke-width="2.5"/><text class="glyph" fill="#bef264" font-size="13">APL</text></g>
+<g transform="translate(348 270)"><circle r="22" fill="#274035" stroke="#bef264" stroke-width="2.5"/><text class="glyph" fill="#bef264" font-size="13">CTV</text></g>
+<g transform="translate(112 370)"><circle r="22" fill="#274035" stroke="#bef264" stroke-width="2.5"/><text class="glyph" fill="#bef264" font-size="11">BETA</text></g>
+<g transform="translate(230 370)"><circle r="33" fill="none" stroke="#e6edf5" stroke-width="3"/><circle r="22" fill="#a3e635" stroke="#bef264" stroke-width="2.5"/><text class="glyph" fill="#1d2a0a" font-size="13">227</text><g transform="translate(16.5 -16.5)"><circle r="9.5" fill="#0f2135"/><polygon points="0.0,-6.5 1.7,-2.3 6.2,-2.0 2.8,0.9 3.8,5.3 0.0,2.9 -3.8,5.3 -2.8,0.9 -6.2,-2.0 -1.7,-2.3" fill="#facc15"/></g></g>
+<g transform="translate(348 370)"><circle r="22" fill="#274035" stroke="#bef264" stroke-width="2.5"/><text class="glyph" fill="#bef264" font-size="13">DOC</text></g>
+<g transform="translate(230 470)"><circle r="36" fill="none" stroke="#bef264" stroke-opacity=".5" stroke-width="2"/><circle r="29" fill="#3a5a35" stroke="#bef264" stroke-width="3"/><text class="glyph" fill="#bef264" font-size="13">100</text></g>
+  </svg></div>
 </div>
 </body></html>
