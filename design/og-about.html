@@ -1,0 +1,44 @@
+<!doctype html><html><head><meta charset="utf-8"><style>
+/* Share card for kylepace.dev/skill-tree/about/ (public/skill-tree/og-about.png). Render at
+   1200x630 (share-card skill). The page's dark tokens (src/styles/theme.css): blueprint paper,
+   form ink and pencil, with the build order drawn as one five-tier track. */
+@font-face{font-family:A;src:url("../node_modules/@fontsource/atkinson-hyperlegible-next/files/atkinson-hyperlegible-next-latin-400-normal.woff2")}
+@font-face{font-family:A;font-weight:700;src:url("../node_modules/@fontsource/atkinson-hyperlegible-next/files/atkinson-hyperlegible-next-latin-700-normal.woff2")}
+html,body{margin:0}
+body{width:1200px;height:630px;background:#0f2135;font-family:A;overflow:hidden;color:#e6edf5}
+.card{box-sizing:border-box;width:1200px;height:630px;padding:64px 64px 64px 72px;display:grid;grid-template-columns:1fr 540px;gap:48px}
+.text{display:flex;flex-direction:column;justify-content:space-between}
+.site{font-size:28px;color:#a3b4c8}
+h1{margin:0;font-size:72px;line-height:1.02;letter-spacing:-0.02em;font-weight:700}
+.sub{margin:26px 0 0;font-size:30px;line-height:1.35;color:#a3b4c8}
+.frame{position:relative;border:3px solid #e6edf5;border-radius:3px;overflow:hidden;padding:30px 28px;box-sizing:border-box;
+  background-color:#0f2135;
+  background-image:linear-gradient(#27425f 1px,transparent 1px),linear-gradient(90deg,#27425f 1px,transparent 1px);
+  background-size:24px 24px;background-position:-1px -1px}
+ol{margin:0;padding:0;list-style:none}
+li{position:relative;display:grid;grid-template-columns:34px 64px 1fr;gap:0 16px;align-items:center;height:88px}
+li:not(:last-child)::before{content:"";position:absolute;left:81px;top:76px;height:24px;width:3px;background:#e6edf5}
+.tier{font-size:18px;font-weight:700;color:#a3b4c8;text-align:right}
+.node{width:64px;height:64px;box-sizing:border-box;border:3px solid #e6edf5;border-radius:50%;background:#152c45;display:grid;place-items:center;font-size:17px;font-weight:700}
+li:first-child .node{border-radius:3px}
+li:last-child .node{box-shadow:0 0 0 4px #0f2135,0 0 0 7px #e6edf5}
+.name{font-size:25px;font-weight:700;line-height:1.2;background:#152c45;border:1px solid #6d87a6;border-radius:3px;padding:10px 14px}
+</style></head><body>
+<div class="card">
+  <div class="text">
+    <div class="site">kylepace.dev/skill-tree/about</div>
+    <div>
+      <h1>How the skill tree works</h1>
+      <p class="sub">One data file, boards drawn ahead of time, and a replay that runs in your browser.</p>
+    </div>
+    <div class="site">Kyle Pace’s career, as a skill tree</div>
+  </div>
+  <div class="frame"><ol>
+    <li><span class="tier">I</span><span class="node">DAT</span><span class="name">One file holds the career</span></li>
+    <li><span class="tier">II</span><span class="node">DRW</span><span class="name">Boards drawn at build time</span></li>
+    <li><span class="tier">III</span><span class="node">PLY</span><span class="name">Your browser adds the play</span></li>
+    <li><span class="tier">IV</span><span class="node">LNK</span><span class="name">Read links wait for the writing</span></li>
+    <li><span class="tier">V</span><span class="node">SHP</span><span class="name">Ships as its own small site</span></li>
+  </ol></div>
+</div>
+</body></html>
