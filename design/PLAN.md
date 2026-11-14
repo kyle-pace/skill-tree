@@ -112,11 +112,12 @@ section at the bottom, linked from "About" on the right of LabLayout's top bar.
 
 ## The about page
 
-`/skill-tree/about/` holds the explanation in full: what it is, how to read it, how it's
-built and the notes. "How it's built" is the one drawn part: a build order set as a single
-five-tier track on graph paper, in the tree's own vocabulary. Tier numerals run down the
-margin, each step is a node with a three-letter glyph (a square milestone to start, round
-skills, a double-ringed capstone to finish), a line runs from each step to the one that
-builds on it, and each step's text sits on an index card so it never rests on the grid.
-"Where it runs" is a filled-in blank with a rule under it. Everything else on the page is
-ruled section headings and body text. Counts come from the data file at build time.
+`/skill-tree/about/` uses the standard About page title, headings and step format (the
+`about-page` skill): the words match every other project, the look is this lab's. "How it
+works" is the one drawn part: its steps are set as a single five-tier track on graph paper,
+in the tree's own drawing. Tier numerals run down the margin, each step is a node with a
+three-letter glyph (a square milestone to start, round skills, a double-ringed capstone to
+finish), a line runs from each step to the next, and each step's text sits on an index
+card so it never rests on the grid. The "Where it runs:" line sits on a rule, like the
+sheet's fields. Everything else is ruled headings and body text. Counts come from the data
+file at build time.

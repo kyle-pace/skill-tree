@@ -1,7 +1,8 @@
 ---
-// About the career skill tree: what it is, how to read it, and how it's built, drawn as
-// a short build order on graph paper, one tier per step (design/PLAN.md, "The about
-// page"). Counts come from the same data file the tree is drawn from.
+// About the career skill tree. Headings and step format follow the about-page skill
+// (.agents/skills/about-page/SKILL.md); "How it works" is drawn as a build order on graph
+// paper, one tier per step (design/PLAN.md, "The about page"). Counts come from the same
+// data file the tree is drawn from.
 import LabLayout from 'kp-design/layouts/LabLayout.astro';
 import { nodes, tracks, timeTicks } from '../../data/skill-tree';
 import liveLinks from '../../data/links.json';
@@ -29,7 +30,7 @@ const steps = [
   {
     glyph: 'DRW',
     name: 'The boards are drawn when the site is built',
-    where: 'The build, before the page reaches you',
+    where: 'The site’s build, before the page reaches you',
     body: [
       'Each track becomes a drawing: a skill’s row is its tier, its column is where it sits across the board, and a line runs up to whatever it builds on. A small colored dot marks a skill that also builds on another track.',
       'Because the drawings are made ahead of time, the tree is already there when the page opens, before any script runs.',
@@ -37,7 +38,7 @@ const steps = [
   },
   {
     glyph: 'PLY',
-    name: 'Your browser adds the play',
+    name: 'Your browser runs the interactive parts',
     where: 'Your phone or computer',
     body: [
       `A script handles the parts you touch: picking a track, opening a skill’s notes, and the replay. The replay walks a timeline from ${firstYear} to now and fills in each skill in the year it started. The long early years are squeezed and the busy recent ones get more room, which is why the timeline isn’t to scale.`,
@@ -45,8 +46,8 @@ const steps = [
   },
   {
     glyph: 'LNK',
-    name: '“Read” links wait for the writing',
-    where: 'A check before every build, and once a week',
+    name: 'Read links appear once the writing is live',
+    where: 'GitHub Actions, before every build and once a week',
     body: [
       `${withStory} skills point to a longer story on kylepace.net, a post or a case study. A skill only shows its link once that page is public there. A small script checks, before every build and every week, so a story I publish shows up here without anyone touching the tree. ${live} are live so far.`,
       'If kylepace.net can’t be reached, the last list is kept.',
@@ -54,8 +55,8 @@ const steps = [
   },
   {
     glyph: 'SHP',
-    name: 'It ships as its own small site',
-    where: 'Cloudflare, at kylepace.dev/skill-tree',
+    name: 'The site rebuilds',
+    where: 'Cloudflare, whenever something changes',
     body: [
       'The skill tree is separate from the rest of kylepace.dev: its own code, its own look, and its own place on the same address. Every saved change rebuilds it. There’s no database and no account. The pages are plain files.',
     ],
@@ -64,16 +65,16 @@ const steps = [
 ---
 
 <LabLayout
-  title="How the skill tree works"
-  description="What Kyle Pace’s career skill tree is, how to read it, and how it’s built: one data file, boards drawn at build time, and a replay that runs in your browser."
+  title="About the career skill tree"
+  description="What Kyle Pace’s career skill tree is, how to use it, how it works and what it collects."
   image="/skill-tree/og-about.png"
-  imageAlt="How the skill tree works: five steps drawn as a build order on blueprint graph paper, from one data file to its own small site."
+  imageAlt="About the career skill tree: five steps drawn as a build order on blueprint graph paper, from One file holds the whole career to The site rebuilds."
   themeColor={{ light: '#eef2f5', dark: '#0f2135' }}
 >
   <a slot="bar" class="about-link" href="/skill-tree/">The tree</a>
 
   <article class="about-page">
-    <h1 class="title">How the skill tree works</h1>
+    <h1 class="title">About the career skill tree</h1>
 
     <section aria-labelledby="what-title">
       <h2 id="what-title">What it is</h2>
@@ -85,7 +86,7 @@ const steps = [
     </section>
 
     <section aria-labelledby="read-title">
-      <h2 id="read-title">How to read it</h2>
+      <h2 id="read-title">How to use it</h2>
       <p>
         Each track is one line of work. Skills near the top came first, and the lines show what each one built on. A star marks a signature
         strength, a dashed ring is a skill I’m still developing, squares are milestones like a new role or a degree, and the larger circle
@@ -95,7 +96,7 @@ const steps = [
     </section>
 
     <section aria-labelledby="built-title">
-      <h2 id="built-title">How it’s built</h2>
+      <h2 id="built-title">How it works</h2>
       <ol class="build">
         {
           steps.map((step, i) => (
@@ -104,7 +105,7 @@ const steps = [
               <span class="node" aria-hidden="true">{step.glyph}</span>
               <div class="entry">
                 <h3>{step.name}</h3>
-                <p class="where"><span class="visually-hidden">Where it runs: </span>{step.where}</p>
+                <p class="where">Where it runs: {step.where}.</p>
                 {step.body.map((text) => <p>{text}</p>)}
               </div>
             </li>
@@ -113,17 +114,26 @@ const steps = [
       </ol>
     </section>
 
-    <section aria-labelledby="notes-title">
-      <h2 id="notes-title">Notes</h2>
+    <section aria-labelledby="good-title">
+      <h2 id="good-title">Good to know</h2>
       <p>
         The levels are my own honest read, not a test score. The attributes are not. The whole thing is still being refined.
       </p>
+    </section>
+
+    <section aria-labelledby="privacy-title">
+      <h2 id="privacy-title">Privacy</h2>
       <p>
         Nothing you pick or replay is saved. Analytics works the same as the rest of kylepace.dev: anonymous, no cookies, and you can turn
         it off (<a href="https://kylepace.dev/privacy/">privacy</a>).
       </p>
+    </section>
+
+    <section aria-labelledby="contact-title">
+      <h2 id="contact-title">Get in touch</h2>
       <p>
-        The code is public: <a href="https://github.com/kyle-pace/skill-tree">github.com/kyle-pace/skill-tree</a>.
+        Questions or something that looks wrong: email <a href="mailto:mail@kylepace.net">mail@kylepace.net</a>. The code is public:
+        <a href="https://github.com/kyle-pace/skill-tree">github.com/kyle-pace/skill-tree</a>.
       </p>
     </section>
   </article>

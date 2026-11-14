@@ -79,7 +79,8 @@ Every project uses the same rules, so charts read the same way everywhere.
 - Leave Amplitude's own `[Amplitude] …` events alone. Add custom events only for actions that answer a real product question; autocapture covers page views and clicks.
 - **One Amplitude project per product.**
 - kylepace.dev and every experiment on it share the kylepace.dev project, so each experiment's custom events also send `experiment` with the project's slug (`experiment: "skill-tree"`).
-- **Tracking plan first:** add each new event to the project's tracking plan in Amplitude, with a description and category, when it ships. Nothing should arrive as "unexpected".
+- **Every new feature ships with its events.** Building a feature includes its analytics: the events that say whether people find it and use it, written in the same change as the feature, not left as a follow-up. Say in your report which events you added, or why the feature needs none.
+- **Tracking plan first:** add each new event and its properties to the project's tracking plan in Amplitude, with a description and category, as part of the same piece of work. Do it yourself when you can reach Amplitude; if you can't, say so and list exactly what needs adding. Nothing should arrive as "unexpected".
 - **Renaming an event:** rename it in code, then merge the old name into the new one in Amplitude so history stays connected. Don't rename in Amplitude alone.
 - **New product:** create its Amplitude project and add a row for it to the "All projects overview" dashboard. A new experiment on kylepace.dev needs neither: it appears there by page path.
 
@@ -96,7 +97,8 @@ Every project uses the same rules, so charts read the same way everywhere.
 - Before building a page or app's look, write a short plan in `design/PLAN.md`: the subject and who it's for, the one bold element, 4 to 6 named colors (light and dark), and the layout as a sketch. Take the ideas from the subject's own world, not from other websites. If a frontend-design skill is available, load it.
 - Check the plan against the generated defaults and change anything that matches: a big headline over a muted sentence and a pill button; pills or one corner radius on everything; grids of identical cards; small labels above headings; colored dots or squares as decoration; details joined with middle dots; monospace for small labels; copy that explains the interface instead of using it.
 - Spend boldness in one place and keep the rest quiet. Look at screenshots (phone and desktop, light and dark) before calling it done.
-- Experiments on kylepace.dev are their own pages (kp-design's `LabLayout`) with their own look. The app comes first; the explanation goes in an About section linked from the top bar.
+- Experiments on kylepace.dev are their own pages (kp-design's `LabLayout`) with their own look. The app comes first; the explanation goes on its About page, linked from the top bar.
+- About pages use the same title, headings and step format everywhere (the `about-page` skill). The look can follow the project's theme; the words never do.
 
 ### How things get built
 
@@ -158,6 +160,7 @@ Match the checking to the change. If you're unsure which tier a change is, use t
 **Tier 2: something people see or use changed.** Layout, styles, a component, a new control, new behavior.
 
 - Everything in tier 1.
+- A new feature has its events in code and in the Amplitude tracking plan (see "Analytics events").
 - Run the project's check command (`npm run check` where a project has one). It runs axe on every page in light and dark, fails on sideways scrolling, and saves screenshots at 320, 768, 1280 and 1920 px. Fix what it finds.
 - Look at the changed screen in light and dark, at the smallest size and a large one.
 - Use new controls with the keyboard (and VoiceOver in apps): reachable, visible focus, a name that makes sense.
@@ -183,7 +186,7 @@ The career skill tree: Kyle's career drawn as an RPG skill tree, at [kylepace.de
 - **Everything this site serves lives under `/skill-tree/`**: the page is `src/pages/skill-tree/index.astro`, public files go in `public/skill-tree/`, and built assets go to `/skill-tree/_astro/`. Don't use Astro's `base` option; with the Cloudflare adapter it serves files from the wrong folder.
 - **It's a standalone lab, not a page of kylepace.dev.** The shell is kp-design's `LabLayout` (a back link to kylepace.dev in the upper left, an "About" link on the right of that bar, a one-line footer, display settings and analytics), pinned to a commit in package.json. There's no site header; the kylepace.dev links live in kp-design, not here.
 - **Its look is its own: a character sheet on graph paper** (a blueprint in dark mode). The tokens are overridden in `src/styles/theme.css`; the reasoning, palette and layout are in `design/PLAN.md`. Read the plan before restyling, and keep to Atkinson Hyperlegible Next with no monospace, square 3px corners, no pills, and meta written as plain sentences.
-- **The tree comes first.** The page opens with one line of title and then the app. The character fields and attributes sit under the tree, and a short About section sits at the bottom (`#about`). Don't add an intro above the tree. The full explanation, with how it's built, is its own page: `src/pages/skill-tree/about.astro` (`/skill-tree/about/`), linked from "About" in the top bar. Its counts come from the data file; if how the tree is built or shipped changes, change that page too.
+- **The tree comes first.** The page opens with one line of title and then the app. The character fields and attributes sit under the tree, and a short About section sits at the bottom (`#about`). Don't add an intro above the tree. The full explanation is its own page: `src/pages/skill-tree/about.astro` (`/skill-tree/about/`), linked from "About" in the top bar, with the standard title, headings and step format from the `about-page` skill. Its counts come from the data file; if how the tree is built or shipped changes, change that page too.
 - **"Read" links:** a node with `read: "writing/<slug>"` or `"work/<slug>"` links to that post on kylepace.net, but only once it's live there. `scripts/links.mjs` checks before every build and weekly (`.github/workflows/links.yml`), writing `src/data/links.json`. Don't edit that file by hand.
 - The share cards are `design/og.html` and `design/og-about.html`, rendered to `public/skill-tree/og.png` and `og-about.png`.
 - Run `npm run build` before pushing; it must pass. Cloudflare Workers Builds deploys `main`.
