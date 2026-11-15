@@ -1,0 +1,317 @@
+---
+// How the career skill tree is built: the technical version of the About page, for the
+// curious. Diagrams are inline SVG in the lab's own colors, each with a title, a
+// description and the same facts in the text. Counts come from the data file.
+import LabLayout from 'kp-design/layouts/LabLayout.astro';
+import { nodes, tracks, timeTicks } from '../../data/skill-tree';
+import liveLinks from '../../data/links.json';
+import '../../styles/theme.css';
+
+const visible = nodes.filter((n) => n.status !== 'secret');
+const skills = visible.filter((n) => (n.kind ?? 'skill') === 'skill').length;
+const milestones = visible.length - skills;
+const links = Object.keys(liveLinks as Record<string, unknown>).length;
+---
+
+<LabLayout
+  lab={{ name: 'the skill tree', href: '/skill-tree/' }}
+  about="/skill-tree/about/"
+  title="How the career skill tree is built"
+  description="The technical version: one data file, boards drawn as SVG when the site is built, and a small script for the parts you touch."
+  image="/skill-tree/og-about.png"
+  imageAlt="About the career skill tree: the title on graph paper beside a build order of five steps."
+  themeColor={{ light: '#eef2f5', dark: '#0f2135' }}
+>
+  <article class="page">
+    <h1 class="title">How the career skill tree is built</h1>
+    <p class="lede">
+      The <a href="/skill-tree/about/">About page</a> says what the tree is. This is how it's put together, for the curious, with
+      links into <a href="https://github.com/kyle-pace/skill-tree">the code</a>.
+    </p>
+
+    <section aria-labelledby="numbers-heading">
+      <h2 id="numbers-heading">The numbers</h2>
+      <dl class="numbers">
+        <div><dt>Tracks</dt><dd>{tracks.length}</dd></div>
+        <div><dt>Skills</dt><dd>{skills}</dd></div>
+        <div><dt>Milestones</dt><dd>{milestones}</dd></div>
+        <div><dt>Stories linked</dt><dd>{links}</dd></div>
+        <div><dt>JavaScript</dt><dd>about 15 KB</dd></div>
+      </dl>
+    </section>
+
+    <section aria-labelledby="pipe-heading">
+      <h2 id="pipe-heading">From one file to a drawn tree</h2>
+      <figure tabindex="0" role="region" aria-label="Diagram: From the data file to your browser. On narrow screens it scrolls sideways.">
+        <svg class="diagram" viewBox="0 0 830 220" role="img" aria-labelledby="pipe-title pipe-desc">
+          <title id="pipe-title">From the data file to your browser</title>
+          <desc id="pipe-desc">The data file describes every track and skill. When the site is built, each track becomes an SVG drawing, so the page arrives already drawn. A script in the browser handles tracks, notes and the replay. A separate check asks kylepace.net which stories are live and writes a small list the build reads.</desc>
+          <defs>
+            <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M0 0 L10 5 L0 10 z" class="ink-fill"></path>
+            </marker>
+          </defs>
+          <g class="box accent"><rect x="10" y="40" width="170" height="70" rx="6"></rect><text x="95.0" y="71.0">skill-tree.ts</text><text x="95.0" y="91.0" class="small">every track and skill</text></g>
+          <g class="box"><rect x="230" y="40" width="190" height="70" rx="6"></rect><text x="325.0" y="71.0">Build: one SVG</text><text x="325.0" y="91.0" class="small">per track, at build time</text></g>
+          <g class="box"><rect x="470" y="40" width="150" height="70" rx="6"></rect><text x="545.0" y="71.0">Static page</text><text x="545.0" y="91.0" class="small">drawn before any script</text></g>
+          <g class="box accent"><rect x="670" y="40" width="140" height="70" rx="6"></rect><text x="740.0" y="71.0">Your browser</text><text x="740.0" y="91.0" class="small">tracks, notes, replay</text></g>
+          <g class="box"><rect x="230" y="150" width="190" height="56" rx="6"></rect><text x="325.0" y="174.0">links.mjs</text><text x="325.0" y="194.0" class="small">is the story live yet?</text></g>
+          <g class="box"><rect x="10" y="150" width="170" height="56" rx="6"></rect><text x="95.0" y="183.0">kylepace.net</text></g>
+          <path d="M180 75 L228 75" class="link" marker-end="url(#arrow)"></path>
+          <path d="M420 75 L468 75" class="link" marker-end="url(#arrow)"></path>
+          <path d="M620 75 L668 75" class="link" marker-end="url(#arrow)"></path>
+          <path d="M180 178 L228 178" class="link" marker-end="url(#arrow)"></path>
+          <path d="M325 150 L325 112" class="link" marker-end="url(#arrow)"></path>
+          <text x="330" y="135" class="small left">links.json</text>
+        </svg>
+      </figure>
+      <ol class="steps">
+        <li>
+          <strong>Everything is data.</strong> Every track, skill and milestone is one entry in <code>src/data/skill-tree.ts</code>: its name, the year it started, how strong it is, what it builds on, and its tier and
+          column. Nothing is drawn by hand; changing the career means changing that file.
+        </li>
+        <li>
+          <strong>Drawn at build time.</strong> <code>SkillBoard.astro</code> turns each track into an SVG while the site is built:
+          positions come from tier and column, lines run up to whatever a skill builds on, and long names wrap to two lines. The page
+          arrives already drawn, so it reads fine before (or without) any script.
+        </li>
+        <li>
+          <strong>A small script for the parts you touch.</strong> Picking a track, opening a skill's notes, lighting up everything it
+          builds on, and the replay. About 15 KB of JavaScript in all.
+        </li>
+        <li>
+          <strong>Links appear when the writing does.</strong> <code>scripts/links.mjs</code> checks kylepace.net before every build and
+          once a week, and only lists a story once its page is public. If kylepace.net can't be reached, the last list is kept.
+        </li>
+      </ol>
+    </section>
+
+    <section aria-labelledby="layout-heading">
+      <h2 id="layout-heading">How a board is laid out</h2>
+      <figure tabindex="0" role="region" aria-label="Diagram: How a skill is placed on a board. On narrow screens it scrolls sideways.">
+        <svg class="diagram" viewBox="0 0 960 296" role="img" aria-labelledby="layout-title layout-desc">
+          <title id="layout-title">How a skill is placed on a board</title>
+          <desc id="layout-desc">Each skill sits on a grid: its tier is its row, from foundations at the top, and its column is where it sits across. A line runs up to each skill it builds on. A pale node is still developing; a small dark dot means it also builds on another track.</desc>
+          
+          <line x1="60" y1="40" x2="900" y2="40" class="axis"></line>
+          <line x1="60" y1="140" x2="900" y2="140" class="axis"></line>
+          <line x1="60" y1="240" x2="900" y2="240" class="axis"></line>
+          <text x="40" y="44" class="small">tier 1</text>
+          <text x="40" y="144" class="small">tier 2</text>
+          <text x="40" y="244" class="small">tier 3</text>
+          <path d="M300 140 L300 40" class="link"></path>
+          <path d="M440 240 L300 140" class="link"></path>
+          <path d="M580 140 L580 40" class="link"></path>
+          <circle cx="300" cy="40" r="20" class="accent-fill"></circle>
+          <circle cx="580" cy="40" r="20" class="accent-fill"></circle>
+          <circle cx="300" cy="140" r="20" class="accent-fill"></circle>
+          <circle cx="580" cy="140" r="20" class="soft-fill"></circle>
+          <circle cx="440" cy="240" r="24" class="accent-fill"></circle>
+          <circle cx="462" cy="222" r="6" class="ink-fill"></circle>
+          <text x="300" y="284" class="small">column 1</text>
+          <text x="580" y="284" class="small">column 3</text>
+          <text x="480" y="232" class="small left">dot: builds on another track</text>
+          <text x="610" y="172" class="small left">pale: still developing</text>
+        </svg>
+      </figure>
+      <p>
+        A skill's position is two numbers in the data: its tier (the row) and its column. That keeps the drawing honest and makes it
+        easy to change: moving a skill is editing a number, not dragging shapes. Strength is shown by fill and an arc, and never by
+        color alone, so the legend works in both themes and for people who don't see color.
+      </p>
+    </section>
+
+    <section aria-labelledby="time-heading">
+      <h2 id="time-heading">The replay's timeline</h2>
+      <figure tabindex="0" role="region" aria-label="Diagram: The replay timeline is weighted. On narrow screens it scrolls sideways.">
+        <svg class="diagram" viewBox="0 0 960 140" role="img" aria-labelledby="time-title time-desc">
+          <title id="time-title">The replay timeline is weighted</title>
+          <desc id="time-desc">The replay walks from the first year to now. The early years are squeezed into a short stretch and the busy recent years get more room, and it moves at a steady pace along that weighted line.</desc>
+          
+          <line x1="40" y1="60" x2="920" y2="60" class="axis"></line>
+          <rect x="40" y="80" width="180" height="22" class="soft-fill"></rect>
+          <rect x="220" y="80" width="700" height="22" class="accent-fill"></rect>
+          <text x="130" y="125" class="small">early years: squeezed</text>
+          <text x="570" y="125" class="small">recent years: more room per year</text>
+          <text x="40" y="48" class="small left">2000s</text>
+          <text x="920" y="48" class="small">now</text>
+          <text x="480" y="30" class="small">the replay moves at a steady 250 ms per percent of this line</text>
+        </svg>
+      </figure>
+      <p>
+        Most of the career happened in the last few years, so a timeline to scale would spend the replay on empty early years. The
+        replay walks a weighted line instead, at a steady 250 ms per percent, filling in each skill in the year it started.
+      </p>
+    </section>
+
+    <section aria-labelledby="stack-heading">
+      <h2 id="stack-heading">The stack</h2>
+      <ul class="notes-list">
+        <li><strong>Site:</strong> Astro on its own Cloudflare Worker, with kp-design's lab layout. Every page is a static file.</li>
+        <li><strong>Drawing:</strong> plain SVG written at build time; no chart or graph library.</li>
+        <li><strong>Look:</strong> a character sheet on graph paper, a blueprint in dark mode, from the lab's own tokens.</li>
+        <li><strong>How I work:</strong> the principles every project follows are in <a href="https://kylepace.dev/how-i-build/">how I build</a>.</li>
+      </ul>
+    </section>
+  </article>
+</LabLayout>
+
+<style>
+  .page {
+    padding: var(--space-4) var(--gutter) var(--space-12);
+    max-width: 64rem;
+  }
+
+  .page h1 {
+    margin: 0 0 var(--space-4);
+    font-size: var(--step-3, var(--step-2));
+    line-height: 1.1;
+  }
+
+  .lede {
+    max-width: 40rem;
+    font-size: var(--step-0);
+  }
+
+  .page section {
+    margin-top: var(--space-12);
+  }
+
+  .page h2 {
+    margin: 0 0 var(--space-4);
+    padding-bottom: var(--space-2);
+    font-size: var(--step-1);
+    font-weight: 700;
+    border-bottom: 3px solid var(--ink);
+  }
+
+  .page a {
+    color: var(--accent-ink);
+    text-underline-offset: 0.15em;
+  }
+
+  .page p,
+  .page li {
+    max-width: 40rem;
+  }
+
+  .page p {
+    margin: 0 0 var(--space-3);
+  }
+
+  .page code {
+    font-family: var(--font-mono, ui-monospace, monospace);
+    font-size: 0.92em;
+  }
+
+  .numbers {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
+    gap: var(--space-4);
+    margin: 0;
+  }
+
+  .numbers div {
+    border-top: 3px solid var(--accent);
+    padding-top: var(--space-2);
+  }
+
+  .numbers dt {
+    color: var(--ink-muted);
+    font-size: var(--step--1);
+  }
+
+  .numbers dd {
+    margin: 0;
+    font-size: var(--step-2);
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Diagrams keep their size, so their labels stay readable; on a phone they scroll
+     sideways, and can be reached and scrolled with the keyboard. */
+  figure {
+    margin: 0 0 var(--space-6);
+    overflow-x: auto;
+  }
+
+  figure:focus-visible {
+    outline: 3px solid var(--accent-ink);
+    outline-offset: 2px;
+  }
+
+  /* Diagrams in the lab's own colors, so they follow light and dark. */
+  .diagram {
+    display: block;
+    width: 100%;
+    min-width: 40rem;
+    height: auto;
+    font-family: inherit;
+  }
+
+  .diagram text {
+    fill: var(--ink);
+    font-size: 15px;
+    font-weight: 600;
+    text-anchor: middle;
+  }
+
+  .diagram text.small {
+    font-size: 12px;
+    font-weight: 400;
+    fill: var(--ink-muted);
+  }
+
+  .diagram text.left {
+    text-anchor: start;
+  }
+
+  .diagram .box rect {
+    fill: var(--bg-raised, var(--bg));
+    stroke: var(--ink);
+    stroke-width: 1.5;
+  }
+
+  .diagram .box.accent rect {
+    stroke: var(--accent);
+    stroke-width: 3;
+  }
+
+  .diagram .box.muted rect {
+    stroke-dasharray: 5 4;
+    stroke: var(--ink-muted);
+  }
+
+  .diagram .link {
+    fill: none;
+    stroke: var(--ink);
+    stroke-width: 1.5;
+  }
+
+  .diagram .ink-fill {
+    fill: var(--ink);
+  }
+
+  .diagram .axis {
+    stroke: var(--ink-muted);
+    stroke-width: 1.5;
+  }
+
+  .diagram .accent-fill {
+    fill: var(--accent);
+  }
+
+  .diagram .soft-fill {
+    fill: color-mix(in oklab, var(--accent), var(--bg) 70%);
+  }
+
+  .steps,
+  .notes-list {
+    padding-left: 1.25rem;
+  }
+
+  .steps li,
+  .notes-list li {
+    margin-bottom: var(--space-3);
+  }
+</style>
