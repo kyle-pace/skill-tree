@@ -181,6 +181,7 @@ CI runs the check command where a project has one, the stack check (see "Default
 
 The career skill tree: Kyle's career drawn as an RPG skill tree, at [kylepace.dev/skill-tree/](https://kylepace.dev/skill-tree/). It moved here from kylepace.net/labs/skill-tree/ (which now redirects) and is one of the experiments listed on the [kylepace.dev](https://github.com/kyle-pace/kylepace.dev) hub.
 
+- **Confluence:** [Career skill tree](https://kylepace.atlassian.net/wiki/spaces/LABS/pages/13664328) in the Labs space.
 - **All content is in `src/data/skill-tree.ts`**: tracks, nodes, eras, attributes and their lore. The drawing is `src/components/SkillTree.astro` and `SkillBoard.astro`; the page (title, character sheet, About) is `src/pages/skill-tree/index.astro`. Change facts in the data file, not the components.
 - **It's its own Cloudflare Worker (`skill-tree`) on the hub's domain.** The routes in `wrangler.jsonc` claim `kylepace.dev/skill-tree` and `/skill-tree/*`; everything else on the domain (favicon, robots.txt, privacy page) is served by the hub.
 - **Everything this site serves lives under `/skill-tree/`**: the page is `src/pages/skill-tree/index.astro`, public files go in `public/skill-tree/`, and built assets go to `/skill-tree/_astro/`. Don't use Astro's `base` option; with the Cloudflare adapter it serves files from the wrong folder.
