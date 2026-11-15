@@ -238,7 +238,8 @@ const quests = visible.filter((n) => n.status === 'active');
     root.querySelectorAll<HTMLElement>('[data-panel]').forEach((p) => (p.hidden = p.dataset.panel !== view));
     root.querySelectorAll<HTMLButtonElement>('.tab').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.view === view)));
     try {
-      history.replaceState(null, '', view === 'all' ? location.pathname : `#${view}`);
+      // Keep the query string (?internal=on, campaign tags) and only change the #view part.
+      history.replaceState(history.state, '', view === 'all' ? location.pathname + location.search : `#${view}`);
     } catch {}
     if (focusPanel) root.querySelector<HTMLElement>(`[data-panel="${view}"] h2`)?.focus();
     // On phones the tree scrolls sideways; open it centered on the trunk, not cut off.
