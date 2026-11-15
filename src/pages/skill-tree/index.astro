@@ -18,13 +18,14 @@ const colorVar = (color: string) => (color === 'neutral' ? 'var(--ink-muted)' : 
 ---
 
 <LabLayout
+  lab={{ name: 'the skill tree', href: '/skill-tree/' }}
+  about="/skill-tree/about/"
   title="Career skill tree"
   description="Kyle Pace’s career as an RPG skill tree: restaurants, a UX bootcamp, product, app stores, an MBA and a spin-off. Pick a track or replay it year by year."
   image="/skill-tree/og.png"
   imageAlt="My career, as a skill tree: one track of Kyle Pace’s career drawn as an RPG skill tree on blueprint graph paper."
   themeColor={{ light: '#eef2f5', dark: '#0f2135' }}
 >
-  <a slot="bar" class="about-link" href="/skill-tree/about/">About</a>
 
   <h1 class="title">My career, as a skill tree</h1>
 
@@ -91,22 +92,6 @@ const colorVar = (color: string) => (color === 'neutral' ? 'var(--ink-muted)' : 
     margin-inline: auto;
   }
 
-  .about-link {
-    display: inline-flex;
-    align-items: center;
-    min-height: 2.75rem;
-    padding-inline: var(--space-2);
-    margin-inline-end: calc(-1 * var(--space-2));
-    border-radius: var(--radius-sm);
-    color: var(--ink-muted);
-    font-size: var(--step--1);
-    text-decoration: none;
-  }
-
-  .about-link:hover {
-    color: var(--ink);
-    text-decoration: underline;
-  }
 
   /* The form's printed title: one line, then straight into the tree. */
   .title {

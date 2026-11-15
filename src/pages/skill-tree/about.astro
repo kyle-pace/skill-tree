@@ -65,13 +65,14 @@ const steps = [
 ---
 
 <LabLayout
+  lab={{ name: 'the skill tree', href: '/skill-tree/' }}
+  about="/skill-tree/about/"
   title="About the career skill tree"
   description="What Kyle Pace’s career skill tree is, how to use it, how it works and what it collects."
   image="/skill-tree/og-about.png"
   imageAlt="About the career skill tree: five steps drawn as a build order on blueprint graph paper, from One file holds the whole career to The site rebuilds."
   themeColor={{ light: '#eef2f5', dark: '#0f2135' }}
 >
-  <a slot="bar" class="about-link" href="/skill-tree/">The tree</a>
 
   <article class="about-page">
     <h1 class="title">About the career skill tree</h1>
@@ -146,22 +147,6 @@ const steps = [
     padding-bottom: var(--space-12);
   }
 
-  .about-link {
-    display: inline-flex;
-    align-items: center;
-    min-height: 2.75rem;
-    padding-inline: var(--space-2);
-    margin-inline-end: calc(-1 * var(--space-2));
-    border-radius: var(--radius-sm);
-    color: var(--ink-muted);
-    font-size: var(--step--1);
-    text-decoration: none;
-  }
-
-  .about-link:hover {
-    color: var(--ink);
-    text-decoration: underline;
-  }
 
   /* The form's printed title, the same as the tree's page. */
   .title {
