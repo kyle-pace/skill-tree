@@ -103,7 +103,7 @@ const quests = visible.filter((n) => n.status === 'active');
     <div class="tl-top">
       <p class="tl-now" aria-live="polite">
         <span class="tl-year" data-year>Now</span>
-        <span class="tl-era" data-era>Local Public</span>
+        <span class="tl-era" data-era>Local Public TV</span>
       </p>
       <div class="tl-buttons">
         <button type="button" class="tl-play" data-play>Replay my career</button>
@@ -367,7 +367,7 @@ const quests = visible.filter((n) => n.status === 'active');
   function paintTimeline() {
     const now = state.playhead >= T1;
     yearEl.textContent = now ? 'Now' : String(Math.floor(state.playhead));
-    const current = now ? ['Local Public'] : eras.filter((e) => e.name && state.playhead >= e.from && state.playhead < e.to).map((e) => e.name);
+    const current = now ? ['Local Public TV'] : eras.filter((e) => e.name && state.playhead >= e.from && state.playhead < e.to).map((e) => e.name);
     eraEl.textContent = current.length ? current.join(' + ') : 'Between chapters';
     playheads.forEach((p) => (p.style.left = `${pct(state.playhead)}%`));
     scrub.value = String(pct(state.playhead));

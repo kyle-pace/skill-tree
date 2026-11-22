@@ -174,8 +174,8 @@ export const nodes: SkillNode[] = [
     lore: "An executive portfolio in Jira Product Discovery, with each product bet tied to the number it should move.",
   },
   {
-    id: "p-dir", track: "pm", tier: 6, col: 0, kind: "capstone", from: ["p-disc", "p-spec", "p-port"], name: "Director of Product", glyph: "DIR", t: 2026.5, when: "Jul 2026 · Local Public", read: "work/local-public",
-    lore: "Part of the founding team when Local Public spun out of Cascade PBS as a public benefit corporation. Leads the whole product surface for 20+ PBS member stations.",
+    id: "p-dir", track: "pm", tier: 6, col: 0, kind: "capstone", from: ["p-disc", "p-spec", "p-port"], name: "Director of Product", glyph: "DIR", t: 2026.5, when: "Jul 2026 · Local Public TV", read: "work/local-public",
+    lore: "Part of the founding team when Local Public TV spun out of Cascade PBS as a public benefit corporation. Leads the whole product surface for 20+ PBS member stations.",
     effects: ["Class unlocked: Director of Product"],
   },
   // Design
@@ -235,8 +235,8 @@ export const nodes: SkillNode[] = [
   },
   {
     id: "r-sign", track: "release", tier: 2, col: -1, lv: "pro", from: ["r-keys"], name: "Accounts & Signing", glyph: "SIG", t: 2024.5, when: "2024 → now",
-    lore: "Developer and organization accounts, certificates and signing, and access across station-owned accounts and Local Public's own.",
-    effects: ["First apps on Local Public's own Apple account"],
+    lore: "Developer and organization accounts, certificates and signing, and access across station-owned accounts and Local Public TV's own.",
+    effects: ["First apps on Local Public TV's own Apple account"],
   },
   {
     id: "r-list", track: "release", tier: 2, col: 0, lv: "sig", from: ["r-keys"], name: "Store Listings", glyph: "ASO", t: 2024.55, when: "2024 → now",
@@ -309,7 +309,7 @@ export const nodes: SkillNode[] = [
   },
   {
     id: "b-ops", track: "mba", tier: 3, col: 1.5, lv: "pro", from: ["b-mba"], name: "Operations", glyph: "OPS", t: 2024.8, when: "MBA → work", read: "writing/rolling-out-new-tools-at-a-small-company",
-    lore: "Process, systems and the tools that hold a company together. Put straight to work when Local Public became its own company.",
+    lore: "Process, systems and the tools that hold a company together. Put straight to work when Local Public TV became its own company.",
     effects: ["Synergy: the spin-off"],
   },
   {
@@ -402,7 +402,7 @@ export const nodes: SkillNode[] = [
   },
   {
     id: "l-team", track: "lead", tier: 5, col: 0.5, kind: "capstone", from: ["l-hire", "l-cult"], name: "Product Team Builder", glyph: "TEAM", t: 2026.8, when: "Jul → Oct 2026",
-    lore: "Formed Local Public's Product team from scratch: a product designer, a partner success manager, and a newly hired Product Manager.",
+    lore: "Formed Local Public TV's Product team from scratch: a product designer, a partner success manager, and a newly hired Product Manager.",
     effects: ["Party size: 4"],
   },
   {
@@ -546,7 +546,7 @@ export const eras: Era[] = [
   { lane: 0, from: 2021.25, to: 2021.7, name: "F. Schumacher & Co.", track: "pm" },
   { lane: 0, from: 2021.7, to: 2022.6, name: "3 Enrollment Marketing", track: "pm" },
   { lane: 0, from: 2022.6, to: 2026.5, name: "Cascade PBS", track: "release" },
-  { lane: 0, from: 2026.5, to: 2027, name: "Local Public", track: "lead" },
+  { lane: 0, from: 2026.5, to: 2027, name: "Local Public TV", track: "lead" },
   { lane: 1, from: 2014, to: 2018.4, name: "BA", track: "mba" },
   { lane: 1, from: 2023, to: 2025.95, name: "MBA", track: "mba" },
   { lane: 1, from: 2026.6, to: 2027, name: "Google data cert", track: "data" },
